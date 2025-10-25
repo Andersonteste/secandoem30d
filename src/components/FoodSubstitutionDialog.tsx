@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { ArrowRight } from "lucide-react";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./ui/use-toast";
 
 interface FoodSubstitutionDialogProps {
   open: boolean;
@@ -10,94 +14,170 @@ interface FoodSubstitutionDialogProps {
   meals: any;
 }
 
-const foodSubstitutions: Record<string, string[]> = {
-  "arroz": ["Quinoa", "Arroz integral", "Macarrão integral", "Batata doce"],
-  "frango": ["Peixe", "Carne magra", "Ovos", "Tofu"],
-  "pão": ["Tapioca", "Pão integral", "Batata doce", "Crepioca"],
-  "leite": ["Leite de amêndoas", "Leite de coco", "Leite de aveia", "Iogurte natural"],
-  "banana": ["Maçã", "Mamão", "Pera", "Morangos"],
-  "batata": ["Batata doce", "Mandioca", "Inhame", "Abóbora"],
-  "carne": ["Frango", "Peixe", "Ovos", "Lentilha"],
-  "queijo": ["Queijo cottage", "Ricota", "Queijo branco", "Requeijão light"],
-  "açúcar": ["Mel", "Stevia", "Xilitol", "Tâmaras"],
-  "óleo": ["Azeite de oliva", "Óleo de coco", "Óleo de abacate", "Manteiga ghee"],
-};
+interface Substitution {
+  nome: string;
+  quantidade: string;
+  motivo: string;
+  calorias: string;
+}
 
 const FoodSubstitutionDialog = ({ open, onOpenChange, meals }: FoodSubstitutionDialogProps) => {
-  const [selectedFood, setSelectedFood] = useState<string | null>(null);
-  
-  const getAllFoods = (): string[] => {
-    const foods: string[] = [];
-    Object.values(meals || {}).forEach((meal: any) => {
-      if (typeof meal === 'string') {
-        foods.push(meal);
+  const [food, setFood] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [substitutions, setSubstitutions] = useState<Substitution[]>([]);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!food.trim() || !quantity.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha o alimento e a quantidade.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    setSubstitutions([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-food-substitution', {
+        body: { food: food.trim(), quantity: quantity.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data?.substituicoes) {
+        setSubstitutions(data.data.substituicoes);
+        toast({
+          title: "Substituições geradas!",
+          description: `Encontramos ${data.data.substituicoes.length} alternativas saudáveis.`,
+        });
+      } else {
+        throw new Error("Resposta inválida da IA");
       }
-    });
-    return foods;
+    } catch (error: any) {
+      console.error('Error fetching substitutions:', error);
+      toast({
+        title: "Erro ao buscar substituições",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const findSubstitutions = (foodText: string): Array<{ original: string; substitutes: string[] }> => {
-    const results: Array<{ original: string; substitutes: string[] }> = [];
-    
-    Object.entries(foodSubstitutions).forEach(([key, subs]) => {
-      if (foodText.toLowerCase().includes(key.toLowerCase())) {
-        results.push({ original: key, substitutes: subs });
-      }
-    });
-    
-    return results;
+  const handleClose = () => {
+    setFood("");
+    setQuantity("");
+    setSubstitutions([]);
+    onOpenChange(false);
   };
-
-  const allFoods = getAllFoods();
-  const availableSubstitutions = allFoods.flatMap(food => 
-    findSubstitutions(food).map(sub => ({ ...sub, mealText: food }))
-  );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Substituição de Alimentos</DialogTitle>
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Substituição de Alimentos
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Encontre substituições saudáveis para seus alimentos
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {availableSubstitutions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhuma substituição disponível para os alimentos de hoje.</p>
-            </div>
-          ) : (
-            availableSubstitutions.map((sub, idx) => (
-              <div key={idx} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-sm capitalize">
-                    {sub.original}
-                  </Badge>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">pode ser substituído por:</span>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  {sub.substitutes.map((substitute, subIdx) => (
-                    <Badge 
-                      key={subIdx}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                    >
-                      {substitute}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="food">Alimento</Label>
+            <Input
+              id="food"
+              placeholder="Ex: Arroz branco"
+              value={food}
+              onChange={(e) => setFood(e.target.value)}
+              disabled={loading}
+              className="bg-card"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="quantity">Quantidade</Label>
+            <Input
+              id="quantity"
+              placeholder="Ex: 100g"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              disabled={loading}
+              className="bg-card"
+            />
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-primary"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Buscando Substituições...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Buscar Substituição
+              </>
+            )}
+          </Button>
+        </form>
+
+        {substitutions.length > 0 && (
+          <div className="space-y-4 mt-6">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              Substituições Sugeridas
+            </h3>
+            <div className="space-y-3">
+              {substitutions.map((sub, idx) => (
+                <div key={idx} className="border rounded-lg p-4 space-y-2 hover:shadow-glow transition-shadow">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-base">{sub.nome}</h4>
+                      <p className="text-sm text-muted-foreground mt-1">{sub.motivo}</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs whitespace-nowrap">
+                      {sub.calorias}
                     </Badge>
-                  ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="secondary" className="text-xs">
+                      {sub.quantidade}
+                    </Badge>
+                  </div>
                 </div>
-                
-                <p className="text-xs text-muted-foreground italic mt-2">
-                  Na refeição: {sub.mealText}
-                </p>
-              </div>
-            ))
-          )}
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-card/50 rounded-lg p-4 mt-6">
+          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Como funciona?
+          </h4>
+          <p className="text-xs text-muted-foreground">
+            Digite o alimento e a quantidade que deseja substituir. 
+            Nossa IA analisará e sugerirá opções com equivalência 
+            nutricional (calorias e macros).
+          </p>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleClose}>
             Fechar
           </Button>
         </div>
