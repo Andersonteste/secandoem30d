@@ -215,8 +215,8 @@ const Dashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <WorkoutCard dayNum={selectedDay} />
           <MealPlanCard dayNum={selectedDay} />
+          <WorkoutCard dayNum={selectedDay} />
         </div>
 
         {/* Quick Actions */}
