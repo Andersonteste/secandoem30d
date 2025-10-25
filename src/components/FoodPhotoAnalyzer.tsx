@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Camera, Upload, Download, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import logoImage from "@/assets/logo-dark.jpg";
 
 interface NutritionData {
   nome: string;
@@ -79,88 +80,125 @@ const FoodPhotoAnalyzer = ({ open, onOpenChange }: FoodPhotoAnalyzerProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
+    // Set canvas size for Instagram Story (9:16)
     canvas.width = 1080;
-    canvas.height = 1350;
+    canvas.height = 1920;
 
-    // Background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#1a1a2e');
-    gradient.addColorStop(1, '#0f0f1e');
-    ctx.fillStyle = gradient;
+    // Background - Dark with texture
+    ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Load and draw the food image
-    const img = new Image();
-    img.onload = () => {
+    // Load logo and food image
+    const logo = new Image();
+    const foodImg = new Image();
+    
+    let imagesLoaded = 0;
+    const checkImagesLoaded = () => {
+      imagesLoaded++;
+      if (imagesLoaded === 2) {
+        drawCanvas();
+      }
+    };
+
+    const drawCanvas = () => {
+      // Draw logo at top
+      const logoHeight = 180;
+      const logoWidth = (logo.width / logo.height) * logoHeight;
+      const logoX = (canvas.width - logoWidth) / 2;
+      ctx.drawImage(logo, logoX, 50, logoWidth, logoHeight);
+
       // Draw food image with rounded corners
-      const imgHeight = 500;
-      const imgY = 50;
+      const foodImgY = 280;
+      const foodImgHeight = 550;
+      const foodImgWidth = canvas.width - 100;
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(50, imgY, canvas.width - 100, imgHeight, 20);
+      ctx.roundRect(50, foodImgY, foodImgWidth, foodImgHeight, 25);
       ctx.clip();
-      ctx.drawImage(img, 50, imgY, canvas.width - 100, imgHeight);
+      
+      // Calculate aspect ratio for food image
+      const aspectRatio = foodImg.width / foodImg.height;
+      const targetAspectRatio = foodImgWidth / foodImgHeight;
+      let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+      
+      if (aspectRatio > targetAspectRatio) {
+        drawHeight = foodImgHeight;
+        drawWidth = drawHeight * aspectRatio;
+        offsetX = -(drawWidth - foodImgWidth) / 2;
+      } else {
+        drawWidth = foodImgWidth;
+        drawHeight = drawWidth / aspectRatio;
+        offsetY = -(drawHeight - foodImgHeight) / 2;
+      }
+      
+      ctx.drawImage(foodImg, 50 + offsetX, foodImgY + offsetY, drawWidth, drawHeight);
       ctx.restore();
 
-      // Title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
+      // Title with gradient
+      const titleGradient = ctx.createLinearGradient(0, 880, 0, 930);
+      titleGradient.addColorStop(0, '#FF8C00');
+      titleGradient.addColorStop(0.5, '#FFD700');
+      titleGradient.addColorStop(1, '#7FFF00');
+      ctx.fillStyle = titleGradient;
+      ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(nutritionData.nome, canvas.width / 2, imgY + imgHeight + 80);
+      ctx.fillText(nutritionData.nome, canvas.width / 2, 920);
 
       // Portion
-      ctx.fillStyle = '#a0a0a0';
+      ctx.fillStyle = '#999';
       ctx.font = '32px system-ui, -apple-system, sans-serif';
-      ctx.fillText(nutritionData.porcao, canvas.width / 2, imgY + imgHeight + 130);
+      ctx.fillText(nutritionData.porcao, canvas.width / 2, 970);
 
       // Nutrition cards
-      const cardY = imgY + imgHeight + 200;
-      const cardWidth = 480;
-      const cardHeight = 140;
-      const gap = 40;
+      const cardY = 1030;
+      const cardWidth = canvas.width - 100;
+      const cardHeight = 130;
+      const gap = 20;
 
       const nutrients = [
-        { label: 'Calorias', value: `${nutritionData.calorias}`, unit: 'kcal', color: '#FF6B6B' },
-        { label: 'Proteínas', value: `${nutritionData.proteinas}g`, unit: '', color: '#4ECDC4' },
-        { label: 'Carboidratos', value: `${nutritionData.carboidratos}g`, unit: '', color: '#95E1D3' },
-        { label: 'Gorduras', value: `${nutritionData.gorduras}g`, unit: '', color: '#F38181' },
-        { label: 'Fibras', value: `${nutritionData.fibras}g`, unit: '', color: '#AA96DA' },
+        { label: 'Calorias', value: `${nutritionData.calorias}`, unit: 'kcal', color: '#FF4500' },
+        { label: 'Proteínas', value: `${nutritionData.proteinas}g`, unit: '', color: '#FF8C00' },
+        { label: 'Carboidratos', value: `${nutritionData.carboidratos}g`, unit: '', color: '#FFD700' },
+        { label: 'Gorduras', value: `${nutritionData.gorduras}g`, unit: '', color: '#FF6347' },
+        { label: 'Fibras', value: `${nutritionData.fibras}g`, unit: '', color: '#7FFF00' },
       ];
 
       nutrients.forEach((nutrient, index) => {
-        const row = Math.floor(index / 2);
-        const col = index % 2;
-        const x = 50 + col * (cardWidth + gap);
-        const y = cardY + row * (cardHeight + gap);
+        const y = cardY + index * (cardHeight + gap);
 
-        // Card background with slight transparency
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        // Card background with gradient
+        const cardGradient = ctx.createLinearGradient(50, y, 50, y + cardHeight);
+        cardGradient.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+        cardGradient.addColorStop(1, 'rgba(255, 255, 255, 0.03)');
+        ctx.fillStyle = cardGradient;
         ctx.beginPath();
-        ctx.roundRect(x, y, cardWidth, cardHeight, 15);
+        ctx.roundRect(50, y, cardWidth, cardHeight, 18);
         ctx.fill();
 
-        // Colored accent bar
+        // Colored accent bar with glow
+        ctx.shadowColor = nutrient.color;
+        ctx.shadowBlur = 15;
         ctx.fillStyle = nutrient.color;
-        ctx.fillRect(x, y, 8, cardHeight);
+        ctx.fillRect(50, y, 10, cardHeight);
+        ctx.shadowBlur = 0;
 
         // Label
-        ctx.fillStyle = '#a0a0a0';
+        ctx.fillStyle = '#aaa';
         ctx.font = '28px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(nutrient.label, x + 30, y + 45);
+        ctx.fillText(nutrient.label, 90, y + 50);
 
         // Value
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
-        ctx.fillText(nutrient.value, x + 30, y + 105);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 56px system-ui, -apple-system, sans-serif';
+        ctx.fillText(nutrient.value, 90, y + 105);
       });
 
-      // Footer
+      // Footer text
       ctx.fillStyle = '#666';
-      ctx.font = '28px system-ui, -apple-system, sans-serif';
+      ctx.font = '26px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Secando em Casa - Análise com IA', canvas.width / 2, canvas.height - 40);
+      ctx.fillText('Análise com IA', canvas.width / 2, canvas.height - 40);
 
       // Trigger download
       canvas.toBlob((blob) => {
@@ -168,18 +206,27 @@ const FoodPhotoAnalyzer = ({ open, onOpenChange }: FoodPhotoAnalyzerProps) => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${nutritionData.nome.replace(/\s+/g, '_')}_nutricao.png`;
+          a.download = `secando_em_casa_${nutritionData.nome.replace(/\s+/g, '_')}.png`;
           a.click();
           URL.revokeObjectURL(url);
           
           toast({
             title: "Imagem salva!",
-            description: "Sua imagem personalizada foi baixada com sucesso.",
+            description: "Sua imagem está pronta para postar no Instagram Story!",
           });
         }
       });
     };
-    img.src = selectedImage;
+
+    logo.onload = checkImagesLoaded;
+    logo.onerror = () => {
+      console.error('Error loading logo');
+      checkImagesLoaded();
+    };
+    logo.src = logoImage;
+
+    foodImg.onload = checkImagesLoaded;
+    foodImg.src = selectedImage;
   };
 
   const handleClose = () => {
