@@ -7,12 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, Calendar, Save, Dumbbell, Apple, Droplets, Moon, Plus, Minus } from "lucide-react";
+import { ArrowLeft, BookOpen, Calendar, Save, Dumbbell, Apple } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Navigation } from "@/components/Navigation";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 
 interface DiaryEntry {
   id: string;
@@ -30,24 +28,8 @@ const Diario = () => {
   const [completedMeal, setCompletedMeal] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Hidratação
-  const [waterIntake, setWaterIntake] = useState(0); // em ml
-  const [waterGoal, setWaterGoal] = useState(2000); // meta padrão de 2L
-  
-  // Sono
-  const [sleepTime, setSleepTime] = useState("");
-  const [wakeTime, setWakeTime] = useState("");
-  const [sleepQuality, setSleepQuality] = useState<"bad" | "ok" | "good" | "">("");
-  
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Função para obter a data atual no horário do Brasil (BRT/BRST)
-  const getBrazilDate = () => {
-    const now = new Date();
-    const brazilTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    return format(brazilTime, "yyyy-MM-dd");
-  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,7 +51,6 @@ const Diario = () => {
 
     if (data) {
       setEntries(data);
-      const todayBrazil = getBrazilDate();
       const todayEntry = data.find(e => e.entry_date === selectedDate);
       
       if (todayEntry) {
@@ -77,27 +58,6 @@ const Diario = () => {
         const photos = (todayEntry.photos as any) || {};
         setCompletedWorkout(photos.completedWorkout || false);
         setCompletedMeal(photos.completedMeal || false);
-        
-        // Hidratação - reseta se não for o dia de hoje
-        if (selectedDate === todayBrazil) {
-          setWaterIntake(photos.waterIntake || 0);
-          setWaterGoal(photos.waterGoal || 2000);
-        } else {
-          setWaterIntake(photos.waterIntake || 0);
-          setWaterGoal(photos.waterGoal || 2000);
-        }
-        
-        // Sono
-        setSleepTime(photos.sleepTime || "");
-        setWakeTime(photos.wakeTime || "");
-        setSleepQuality(photos.sleepQuality || "");
-      } else {
-        // Resetar valores para nova entrada
-        setWaterIntake(0);
-        setWaterGoal(2000);
-        setSleepTime("");
-        setWakeTime("");
-        setSleepQuality("");
       }
     }
   };
@@ -112,12 +72,7 @@ const Diario = () => {
       notes: currentNote,
       photos: {
         completedWorkout,
-        completedMeal,
-        waterIntake,
-        waterGoal,
-        sleepTime,
-        wakeTime,
-        sleepQuality
+        completedMeal
       }
     };
 
@@ -242,126 +197,6 @@ const Diario = () => {
             </div>
           </div>
 
-          {/* Hidratação */}
-          <Card className="p-4 mb-4 bg-accent/50">
-            <div className="flex items-center gap-2 mb-3">
-              <Droplets className="h-5 w-5 text-blue-500" />
-              <h3 className="font-semibold">Hidratação</h3>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span>{waterIntake}ml de {waterGoal}ml</span>
-                <span className="text-muted-foreground">
-                  {Math.round((waterIntake / waterGoal) * 100)}%
-                </span>
-              </div>
-              
-              <Progress value={(waterIntake / waterGoal) * 100} className="h-2" />
-              
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setWaterIntake(Math.max(0, waterIntake - 250))}
-                  className="flex-1"
-                >
-                  <Minus className="h-4 w-4 mr-1" />
-                  250ml
-                </Button>
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  onClick={() => setWaterIntake(Math.min(waterGoal, waterIntake + 250))}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  250ml
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Meta diária:</label>
-                <Input
-                  type="number"
-                  value={waterGoal}
-                  onChange={(e) => setWaterGoal(Number(e.target.value))}
-                  className="w-24 h-8 text-sm"
-                  min="500"
-                  max="5000"
-                  step="250"
-                />
-                <span className="text-sm">ml</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Sono */}
-          <Card className="p-4 mb-4 bg-accent/50">
-            <div className="flex items-center gap-2 mb-3">
-              <Moon className="h-5 w-5 text-indigo-500" />
-              <h3 className="font-semibold">Sono e Descanso</h3>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Hora de dormir</label>
-                  <Input
-                    type="time"
-                    value={sleepTime}
-                    onChange={(e) => setSleepTime(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Hora de acordar</label>
-                  <Input
-                    type="time"
-                    value={wakeTime}
-                    onChange={(e) => setWakeTime(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-xs text-muted-foreground mb-2 block">Qualidade do sono</label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={sleepQuality === "bad" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSleepQuality("bad")}
-                    className="flex-1"
-                  >
-                    😴 Ruim
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={sleepQuality === "ok" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSleepQuality("ok")}
-                    className="flex-1"
-                  >
-                    😐 Ok
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={sleepQuality === "good" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSleepQuality("good")}
-                    className="flex-1"
-                  >
-                    😊 Bom
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
           <div className="mb-4">
             <label className="text-sm font-medium mb-2 block">Como me senti hoje</label>
             <Textarea
@@ -402,11 +237,6 @@ const Diario = () => {
                     const clickedPhotos = (entry.photos as any) || {};
                     setCompletedWorkout(clickedPhotos.completedWorkout || false);
                     setCompletedMeal(clickedPhotos.completedMeal || false);
-                    setWaterIntake(clickedPhotos.waterIntake || 0);
-                    setWaterGoal(clickedPhotos.waterGoal || 2000);
-                    setSleepTime(clickedPhotos.sleepTime || "");
-                    setWakeTime(clickedPhotos.wakeTime || "");
-                    setSleepQuality(clickedPhotos.sleepQuality || "");
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">

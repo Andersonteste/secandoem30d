@@ -12,6 +12,8 @@ import WorkoutCard from "@/components/WorkoutCard";
 import MealPlanCard from "@/components/MealPlanCard";
 import { Navigation } from "@/components/Navigation";
 import TipsTabs from "@/components/TipsTabs";
+import { HydrationCard } from "@/components/HydrationCard";
+import { SleepCard } from "@/components/SleepCard";
 const motivationalPhrases = ["Você está mais forte do que pensa! 💪", "Cada dia é uma nova chance de evoluir! 🌟", "Seu corpo pode fazer muito mais do que você imagina!", "A disciplina de hoje é o corpo dos seus sonhos amanhã!", "Não desista, você está fazendo incrível! 🔥", "Transformação começa com um passo de cada vez!", "Você merece a melhor versão de si mesmo! ⭐", "Persistência é a chave do sucesso! 🎯"];
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -196,6 +198,12 @@ const Dashboard = () => {
 
         {/* Tips and Guidelines */}
         <TipsTabs />
+
+        {/* Daily Progress Cards */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <HydrationCard />
+          <SleepCard />
+        </div>
 
         {/* Day Selector */}
         <DaySelector selectedDay={selectedDay} completedDays={completedDays} onDaySelect={setSelectedDay} />
