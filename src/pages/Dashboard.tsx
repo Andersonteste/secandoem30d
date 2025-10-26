@@ -55,7 +55,7 @@ const Dashboard = () => {
     const {
       data,
       error
-    } = await supabase.from("challenge_progress").select("day_num").eq("user_id", userId).eq("completed", true);
+    } = await (supabase as any).from("challenge_progress").select("day_num").eq("user_id", userId).eq("completed", true);
     if (!error && data) {
       setCompletedDays(data.map(d => d.day_num));
     }
@@ -66,7 +66,7 @@ const Dashboard = () => {
     if (isCompleted) {
       const {
         error
-      } = await supabase.from("challenge_progress").delete().eq("user_id", user.id).eq("day_num", selectedDay);
+      } = await (supabase as any).from("challenge_progress").delete().eq("user_id", user.id).eq("day_num", selectedDay);
       if (error) {
         console.error("Error deleting progress:", error);
         toast({
@@ -84,7 +84,7 @@ const Dashboard = () => {
     } else {
       const {
         error
-      } = await supabase.from("challenge_progress").upsert({
+      } = await (supabase as any).from("challenge_progress").upsert({
         user_id: user.id,
         day_num: selectedDay,
         completed: true,
@@ -112,7 +112,7 @@ const Dashboard = () => {
     if (!user) return;
     const {
       error
-    } = await supabase.from("challenge_progress").delete().eq("user_id", user.id);
+    } = await (supabase as any).from("challenge_progress").delete().eq("user_id", user.id);
     if (error) {
       console.error("Error resetting challenge:", error);
       toast({

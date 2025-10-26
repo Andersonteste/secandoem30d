@@ -28,11 +28,11 @@ const MealPlanCard = ({ dayNum }: { dayNum: number }) => {
 
   const loadMealPlan = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("daily_meals")
       .select("*")
       .eq("day_num", dayNum)
-      .single();
+      .maybeSingle();
 
     setMealPlan(data);
     setLoading(false);

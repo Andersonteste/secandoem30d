@@ -63,7 +63,7 @@ const Refeicoes = () => {
   }, []);
 
   const loadRecipes = async () => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("recipes")
       .select("*")
       .order("title");

@@ -42,7 +42,7 @@ const Diario = () => {
   }, [navigate]);
 
   const loadEntries = async (userId: string) => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("food_diary")
       .select("*")
       .eq("user_id", userId)
@@ -76,7 +76,7 @@ const Diario = () => {
     };
 
     if (existingEntry) {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("food_diary")
         .update(entryData)
         .eq("id", existingEntry.id);
@@ -95,7 +95,7 @@ const Diario = () => {
         loadEntries(user.id);
       }
     } else {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("food_diary")
         .insert({
           user_id: user.id,

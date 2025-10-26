@@ -28,7 +28,7 @@ const Treinos = () => {
   }, []);
 
   const loadWorkouts = async () => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("workouts")
       .select("*")
       .order("seq");

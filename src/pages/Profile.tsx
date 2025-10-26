@@ -41,11 +41,11 @@ const Profile = () => {
   }, [navigate]);
 
   const loadProfile = async (userId: string) => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setProfile({
@@ -61,7 +61,7 @@ const Profile = () => {
     if (!user) return;
 
     setLoading(true);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("profiles")
       .update(profile)
       .eq("id", user.id);
@@ -88,7 +88,7 @@ const Profile = () => {
     if (!confirmed) return;
 
     setLoading(true);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("challenge_progress")
       .delete()
       .eq("user_id", user.id);

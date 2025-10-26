@@ -23,11 +23,11 @@ const WorkoutCard = ({ dayNum }: { dayNum: number }) => {
 
   const loadWorkout = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("workouts")
       .select("*")
       .eq("seq", dayNum)
-      .single();
+      .maybeSingle();
 
     setWorkout(data);
     setLoading(false);
