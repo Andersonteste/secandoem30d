@@ -14,7 +14,215 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      challenge_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          day_num: number
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          day_num: number
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          day_num?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_meals: {
+        Row: {
+          created_at: string | null
+          day_num: number | null
+          id: string
+          meals: Json | null
+          task: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_num?: number | null
+          id?: string
+          meals?: Json | null
+          task?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_num?: number | null
+          id?: string
+          meals?: Json | null
+          task?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      food_diary: {
+        Row: {
+          created_at: string | null
+          entry_date: string
+          id: string
+          notes: string | null
+          photos: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entry_date: string
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          display_name: string | null
+          height_cm: number | null
+          id: string
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          height_cm?: number | null
+          id: string
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          height_cm?: number | null
+          id?: string
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      recipes: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          ingredients: Json | null
+          photo_url: string | null
+          steps: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          ingredients?: Json | null
+          photo_url?: string | null
+          steps?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          ingredients?: Json | null
+          photo_url?: string | null
+          steps?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      weight_logs: {
+        Row: {
+          created_at: string
+          id: string
+          measured_at: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measured_at?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measured_at?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weight_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_min: number | null
+          id: string
+          level: string | null
+          seq: number | null
+          title: string
+          updated_at: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_min?: number | null
+          id?: string
+          level?: string | null
+          seq?: number | null
+          title: string
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_min?: number | null
+          id?: string
+          level?: string | null
+          seq?: number | null
+          title?: string
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
