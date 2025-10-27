@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ArrowLeft, Search, ChefHat, Clock, Users, Flame, Fish, Salad, Apple, Coffee, UtensilsCrossed, Cookie, Droplets, Leaf } from "lucide-react";
+import { ArrowLeft, Search, ChefHat, Clock, Users, Flame, Fish, Salad, Apple, Coffee, UtensilsCrossed, Cookie, Droplets, Leaf, Moon, Sun, FileText } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 interface Recipe {
   id: string;
@@ -50,13 +51,28 @@ const getCategoryColor = (category: string) => {
   return colorMap[category] || "text-primary";
 };
 
+const bonusPDFs = [
+  {
+    id: "1",
+    title: "Guia de Receitas Bônus 1",
+    url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview"
+  },
+  {
+    id: "2",
+    title: "Guia de Receitas Bônus 2",
+    url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview"
+  }
+];
+
 const Refeicoes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("Tudo");
+  const [selectedPDF, setSelectedPDF] = useState<typeof bonusPDFs[0] | null>(null);
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     loadRecipes();
@@ -94,14 +110,24 @@ const Refeicoes = () => {
       <Navigation />
       <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
         <div className="max-w-6xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="mb-4 text-primary-foreground hover:bg-white/20"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Dashboard
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/dashboard")}
+              className="text-primary-foreground hover:bg-white/20"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar ao Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="text-primary-foreground hover:bg-white/20"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+          </div>
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-full">
               <ChefHat className="h-6 w-6" />
@@ -194,7 +220,50 @@ const Refeicoes = () => {
             })}
           </div>
         )}
+
+        {/* Bonus PDFs Section */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <FileText className="h-6 w-6 text-primary" />
+            Conteúdo Bônus
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {bonusPDFs.map((pdf) => (
+              <Card
+                key={pdf.id}
+                className="p-6 hover:shadow-glow transition-all cursor-pointer"
+                onClick={() => setSelectedPDF(pdf)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-primary p-3 rounded-lg">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{pdf.title}</h3>
+                    <p className="text-sm text-muted-foreground">Clique para visualizar</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!selectedPDF} onOpenChange={() => setSelectedPDF(null)}>
+        <DialogContent className="max-w-4xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{selectedPDF?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedPDF && (
+            <iframe
+              src={selectedPDF.url}
+              className="w-full h-full rounded-lg"
+              allow="autoplay"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Recipe Detail Dialog */}
       <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
