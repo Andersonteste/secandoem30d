@@ -141,6 +141,33 @@ const Refeicoes = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Bonus PDFs Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <FileText className="h-6 w-6 text-primary" />
+            Conteúdo Bônus
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {bonusPDFs.map((pdf) => (
+              <Card
+                key={pdf.id}
+                className="p-6 hover:shadow-glow transition-all cursor-pointer"
+                onClick={() => setSelectedPDF(pdf)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-primary p-3 rounded-lg">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{pdf.title}</h3>
+                    <p className="text-sm text-muted-foreground">Clique para visualizar</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-6">
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -220,33 +247,6 @@ const Refeicoes = () => {
             })}
           </div>
         )}
-
-        {/* Bonus PDFs Section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            Conteúdo Bônus
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {bonusPDFs.map((pdf) => (
-              <Card
-                key={pdf.id}
-                className="p-6 hover:shadow-glow transition-all cursor-pointer"
-                onClick={() => setSelectedPDF(pdf)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="bg-gradient-primary p-3 rounded-lg">
-                    <FileText className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{pdf.title}</h3>
-                    <p className="text-sm text-muted-foreground">Clique para visualizar</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* PDF Viewer Dialog */}

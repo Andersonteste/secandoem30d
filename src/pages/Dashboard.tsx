@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
 import MealPlanCard from "@/components/MealPlanCard";
@@ -21,9 +22,8 @@ const Dashboard = () => {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [motivationalPhrase] = useState(() => motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)]);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   useEffect(() => {
     supabase.auth.getSession().then(({
       data: {
@@ -157,6 +157,14 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="text-primary-foreground hover:bg-white/20"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-primary-foreground hover:bg-white/20">
               <UserIcon className="h-5 w-5" />
             </Button>
