@@ -22,8 +22,13 @@ const Dashboard = () => {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [motivationalPhrase] = useState(() => motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)]);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
+  const {
+    toast
+  } = useToast();
+  const {
+    theme,
+    setTheme
+  } = useTheme();
   useEffect(() => {
     supabase.auth.getSession().then(({
       data: {
@@ -152,17 +157,12 @@ const Dashboard = () => {
               <Dumbbell className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Secando em casa</h1>
-              <p className="text-sm opacity-90">{completedDays.length} de 30 dias concluídos</p>
+              <h1 className="font-bold text-sm">Secando em casa</h1>
+              <p className="opacity-90 text-xs">{completedDays.length} de 30 dias concluídos</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-primary-foreground hover:bg-white/20"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-primary-foreground hover:bg-white/20">
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-primary-foreground hover:bg-white/20">
