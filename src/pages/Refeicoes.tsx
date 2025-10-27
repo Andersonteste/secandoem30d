@@ -168,9 +168,17 @@ const Refeicoes = () => {
                   onClick={() => setSelectedRecipe(recipe)}
                 >
                   <div className="flex items-center gap-4 p-3">
-                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 ${iconColor}`}>
-                      <IconComponent className="h-7 w-7" />
-                    </div>
+                    {recipe.photo_url ? (
+                      <img 
+                        src={recipe.photo_url} 
+                        alt={recipe.title}
+                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className={`w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 ${iconColor}`}>
+                        <IconComponent className="h-7 w-7" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-base mb-1 truncate">{recipe.title}</h3>
                       {recipe.category && (
@@ -199,12 +207,20 @@ const Refeicoes = () => {
           </DialogHeader>
           
           {selectedRecipe && (
-            <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${getCategoryColor(selectedRecipe.category)} bg-card/50 border-2 border-border`}>
-              {(() => {
-                const IconComponent = getCategoryIcon(selectedRecipe.category);
-                return <IconComponent className="h-10 w-10" />;
-              })()}
-            </div>
+            selectedRecipe.photo_url ? (
+              <img 
+                src={selectedRecipe.photo_url} 
+                alt={selectedRecipe.title}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
+            ) : (
+              <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${getCategoryColor(selectedRecipe.category)} bg-card/50 border-2 border-border`}>
+                {(() => {
+                  const IconComponent = getCategoryIcon(selectedRecipe.category);
+                  return <IconComponent className="h-10 w-10" />;
+                })()}
+              </div>
+            )
           )}
 
           <div className="space-y-6">

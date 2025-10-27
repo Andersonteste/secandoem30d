@@ -28,15 +28,15 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         icons: [
           {
-            src: "/icon-512.png",
+            src: "/splash-screen.jpg",
             sizes: "512x512",
-            type: "image/png",
+            type: "image/jpeg",
             purpose: "any maskable"
           },
           {
-            src: "/icon-512.png",
+            src: "/splash-screen.jpg",
             sizes: "192x192",
-            type: "image/png",
+            type: "image/jpeg",
             purpose: "any maskable"
           }
         ]
