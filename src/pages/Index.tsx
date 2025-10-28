@@ -3,47 +3,36 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dumbbell, TrendingUp, Apple, Target, CheckCircle2 } from "lucide-react";
-
 const Index = () => {
   const navigate = useNavigate();
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       if (session) {
         navigate("/dashboard");
       }
     });
   }, [navigate]);
-
-  return (
-    <div className="min-h-screen bg-gradient-primary">
+  return <div className="min-h-screen bg-gradient-primary">
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-16 animate-fade-in">
           <div className="inline-block bg-white/20 p-4 rounded-full mb-6 animate-pulse-glow">
             <Dumbbell className="h-16 w-16 text-white" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-            FitChallenge 30
-          </h1>
+          <h1 className="md:text-6xl font-bold text-white mb-4 text-4xl">Secando em casa</h1>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Transforme seu corpo e mente em apenas 30 dias com treinos personalizados, 
             planos alimentares e desafios diários.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Button
-              size="lg"
-              onClick={() => navigate("/auth")}
-              className="bg-white text-primary hover:bg-white/90 shadow-glow text-lg px-8"
-            >
+            <Button size="lg" onClick={() => navigate("/auth")} className="bg-white text-primary hover:bg-white/90 shadow-glow text-lg px-8">
               <TrendingUp className="mr-2 h-5 w-5" />
               Começar Jornada
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/auth")}
-              className="border-white text-white hover:bg-white/10 text-lg px-8"
-            >
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="border-white text-white hover:bg-white/10 text-lg px-8">
               Entrar
             </Button>
           </div>
@@ -61,7 +50,9 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white animate-scale-in" style={{ animationDelay: "0.1s" }}>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white animate-scale-in" style={{
+          animationDelay: "0.1s"
+        }}>
             <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
               <Apple className="h-6 w-6" />
             </div>
@@ -72,7 +63,9 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white animate-scale-in" style={{ animationDelay: "0.2s" }}>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white animate-scale-in" style={{
+          animationDelay: "0.2s"
+        }}>
             <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
               <Target className="h-6 w-6" />
             </div>
@@ -126,8 +119,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
