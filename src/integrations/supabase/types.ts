@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      bonus: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          ingredients: Json | null
+          photo_url: string | null
+          steps: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          ingredients?: Json | null
+          photo_url?: string | null
+          steps?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          ingredients?: Json | null
+          photo_url?: string | null
+          steps?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       challenge_progress: {
         Row: {
           completed: boolean | null

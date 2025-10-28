@@ -98,13 +98,25 @@ const MealPlanCard = ({ dayNum }: { dayNum: number }) => {
           const mealContent = meals[key];
           if (!mealContent) return null;
 
+          // Support both string and array formats
+          const options = Array.isArray(mealContent) ? mealContent : [mealContent];
+
           return (
             <div key={key} className="border-l-2 border-primary/20 pl-4">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-2">
                 <Icon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-semibold">{label}</span>
               </div>
-              <p className="text-sm text-muted-foreground">{mealContent}</p>
+              <div className="space-y-2">
+                {options.map((option, index) => (
+                  <div key={index} className="text-sm text-muted-foreground">
+                    {options.length > 1 && (
+                      <span className="font-medium text-foreground">Opção {index + 1}: </span>
+                    )}
+                    <span>{option}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })}
