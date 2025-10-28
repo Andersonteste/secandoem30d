@@ -84,14 +84,14 @@ const Bonus = () => {
 
       {/* PDF Viewer Dialog */}
       <Dialog open={!!selectedPDF} onOpenChange={() => setSelectedPDF(null)}>
-        <DialogContent className="max-w-5xl h-[95vh] p-0">
-          <DialogHeader className="px-6 pt-6 pb-2">
+        <DialogContent className="max-w-6xl h-[96vh] p-0 flex flex-col">
+          <DialogHeader className="px-6 pt-4 pb-2 shrink-0">
             <DialogTitle>{selectedPDF?.title}</DialogTitle>
           </DialogHeader>
           {selectedPDF && (
             <iframe
               src={selectedPDF.url}
-              className="w-full flex-1 rounded-b-lg"
+              className="w-full h-[calc(96vh-60px)] rounded-b-lg"
               allow="autoplay"
             />
           )}
