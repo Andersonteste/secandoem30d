@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Droplets, AlertCircle, Clock } from "lucide-react";
+import { Droplets, AlertCircle, Clock, Leaf } from "lucide-react";
 
 const TipsTabs = () => {
   return (
@@ -142,6 +142,36 @@ const TipsTabs = () => {
                 </ul>
                 
                 <p className="text-muted-foreground mt-3 font-semibold">Na manhã seguinte, em jejum consuma 200 ml de água morna com 1/2 limão espremido, todos os dias.</p>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="vegetais">
+          <AccordionTrigger className="text-lg font-semibold">
+            <div className="flex items-center gap-2">
+              <Leaf className="h-5 w-5 text-primary" />
+              Tipos de Vegetais
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4 pt-4">
+            <div className="space-y-4 text-sm">
+              <div className="flex gap-2">
+                <Leaf className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold mb-2">Tipo A e Tipo B</h4>
+                  <p className="text-muted-foreground mb-3">Em alguns Cardápios você vai notar que falamos sobre Vegetais Tipo A e B. Você encontra essa informação no Google também, mas abaixo separei uma lista com cada um deles para facilitar para você!</p>
+                </div>
+              </div>
+              
+              <div className="bg-accent/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2 text-primary">Vegetais Grupo A:</h4>
+                <p className="text-muted-foreground">Abobrinha, Acelga, Agrião, Alface, Almeirão, Berinjela, Brócolis, Chicória, Couve, cheiro-verde, Couve flor, Espinafre, Jiló, Maxixe, Mostarda, Rabanete, Repolho, Rúcula, Serralha, Pimentão, Pepino, Taioba, Tomate.</p>
+              </div>
+              
+              <div className="bg-accent/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2 text-primary">Vegetais Grupo B:</h4>
+                <p className="text-muted-foreground">Abóbora moranga, Beterraba, Cenoura, Chuchu, Ervilha-torta, Nabo, Palmito, Quiabo, Vagem.</p>
               </div>
             </div>
           </AccordionContent>
