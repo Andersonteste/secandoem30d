@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Refeicoes from "./pages/Refeicoes";
+import Bonus from "./pages/Bonus";
 import Treinos from "./pages/Treinos";
 import Diario from "./pages/Diario";
 import Profile from "./pages/Profile";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/refeicoes" element={<Refeicoes />} />
+            <Route path="/bonus" element={<Bonus />} />
             <Route path="/treinos" element={<Treinos />} />
             <Route path="/diario" element={<Diario />} />
             <Route path="/profile" element={<Profile />} />

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift } from "lucide-react";
 import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
@@ -234,7 +234,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/comunidade")}>
             <Users className="h-6 w-6" />
             Comunidade
@@ -242,6 +242,10 @@ const Dashboard = () => {
           <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/diario")}>
             <BookOpen className="h-6 w-6" />
             Diário Alimentar
+          </Button>
+          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/bonus")}>
+            <Gift className="h-6 w-6" />
+            Conteúdo Bônus
           </Button>
         </div>
       </div>
