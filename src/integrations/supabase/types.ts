@@ -128,28 +128,46 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          available_days: number | null
           created_at: string | null
+          dietary_restrictions: string[] | null
           display_name: string | null
+          experience_level: string | null
+          goal: string | null
           height_cm: number | null
           id: string
+          onboarding_completed: boolean | null
+          target_weight_kg: number | null
           updated_at: string | null
           weight_kg: number | null
         }
         Insert: {
           age?: number | null
+          available_days?: number | null
           created_at?: string | null
+          dietary_restrictions?: string[] | null
           display_name?: string | null
+          experience_level?: string | null
+          goal?: string | null
           height_cm?: number | null
           id: string
+          onboarding_completed?: boolean | null
+          target_weight_kg?: number | null
           updated_at?: string | null
           weight_kg?: number | null
         }
         Update: {
           age?: number | null
+          available_days?: number | null
           created_at?: string | null
+          dietary_restrictions?: string[] | null
           display_name?: string | null
+          experience_level?: string | null
+          goal?: string | null
           height_cm?: number | null
           id?: string
+          onboarding_completed?: boolean | null
+          target_weight_kg?: number | null
           updated_at?: string | null
           weight_kg?: number | null
         }
