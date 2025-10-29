@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, Calendar } from "lucide-react";
+import { ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, Calendar, Target } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { format, differenceInDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -18,6 +18,11 @@ interface Profile {
   weight_kg: number | null;
   height_cm: number | null;
   created_at: string | null;
+  goal: string | null;
+  target_weight_kg: number | null;
+  experience_level: string | null;
+  available_days: number | null;
+  dietary_restrictions: string[] | null;
 }
 
 interface WeightLog {
@@ -35,6 +40,11 @@ const Profile = () => {
     weight_kg: null,
     height_cm: null,
     created_at: null,
+    goal: null,
+    target_weight_kg: null,
+    experience_level: null,
+    available_days: null,
+    dietary_restrictions: null,
   });
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [newWeight, setNewWeight] = useState<string>("");
@@ -67,6 +77,11 @@ const Profile = () => {
         weight_kg: data.weight_kg,
         height_cm: data.height_cm,
         created_at: data.created_at,
+        goal: data.goal,
+        target_weight_kg: data.target_weight_kg,
+        experience_level: data.experience_level,
+        available_days: data.available_days,
+        dietary_restrictions: data.dietary_restrictions,
       });
     }
 
@@ -222,6 +237,39 @@ const Profile = () => {
     };
   };
 
+  const calculateBMI = () => {
+    if (!profile.weight_kg || !profile.height_cm) return null;
+    const heightInMeters = profile.height_cm / 100;
+    const bmi = profile.weight_kg / (heightInMeters * heightInMeters);
+    return bmi.toFixed(1);
+  };
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return { label: "Abaixo do Peso", color: "text-blue-500" };
+    if (bmi < 25) return { label: "Peso Normal", color: "text-green-500" };
+    if (bmi < 30) return { label: "Sobrepeso", color: "text-yellow-500" };
+    return { label: "Obesidade", color: "text-red-500" };
+  };
+
+  const getGoalLabel = (goal: string | null) => {
+    const goals: Record<string, string> = {
+      lose_weight: "Perder Peso",
+      gain_muscle: "Ganhar Massa",
+      get_fit: "Ficar em Forma",
+      maintain: "Manter Peso"
+    };
+    return goal ? goals[goal] : "Não definido";
+  };
+
+  const getLevelLabel = (level: string | null) => {
+    const levels: Record<string, string> = {
+      beginner: "Iniciante",
+      intermediate: "Intermediário",
+      advanced: "Avançado"
+    };
+    return level ? levels[level] : "Não definido";
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pt-20">
       <Navigation />
@@ -248,7 +296,57 @@ const Profile = () => {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* IMC and Stats Card */}
         <Card className="p-6 bg-gradient-card shadow-card mb-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Suas Estatísticas
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* IMC */}
+            {calculateBMI() && (
+              <div className="text-center p-4 bg-background/50 rounded-lg border">
+                <p className="text-sm text-muted-foreground mb-1">IMC</p>
+                <p className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  {calculateBMI()}
+                </p>
+                <p className={`text-xs mt-1 font-medium ${getBMICategory(parseFloat(calculateBMI()!)).color}`}>
+                  {getBMICategory(parseFloat(calculateBMI()!)).label}
+                </p>
+              </div>
+            )}
+            
+            {/* Peso Atual */}
+            {profile.weight_kg && (
+              <div className="text-center p-4 bg-background/50 rounded-lg border">
+                <p className="text-sm text-muted-foreground mb-1">Peso Atual</p>
+                <p className="text-3xl font-bold text-primary">{profile.weight_kg}</p>
+                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+              </div>
+            )}
+            
+            {/* Meta de Peso */}
+            {profile.target_weight_kg && (
+              <div className="text-center p-4 bg-background/50 rounded-lg border">
+                <p className="text-sm text-muted-foreground mb-1">Meta</p>
+                <p className="text-3xl font-bold text-primary">{profile.target_weight_kg}</p>
+                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+              </div>
+            )}
+            
+            {/* Objetivo */}
+            {profile.goal && (
+              <div className="text-center p-4 bg-background/50 rounded-lg border">
+                <p className="text-sm text-muted-foreground mb-1">Objetivo</p>
+                <p className="text-lg font-bold text-primary">{getGoalLabel(profile.goal)}</p>
+                <p className="text-xs mt-1 text-muted-foreground">{getLevelLabel(profile.experience_level)}</p>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-gradient-card shadow-card mb-6">
+          <h3 className="text-lg font-semibold mb-4">Informações Pessoais</h3>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="display_name">Nome</Label>
