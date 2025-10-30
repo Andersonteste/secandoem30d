@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -17,16 +17,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 271 91% 65%;
+    --primary: 25 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 17 88% 65%;
+    --secondary: 152 100% 50%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 330 81% 60%;
+    --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,45 +34,45 @@ All colors MUST be HSL.
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 271 91% 65%;
+    --ring: 25 100% 50%;
 
     --radius: 0.75rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(271, 91%, 65%), hsl(330, 81%, 60%), hsl(17, 88%, 65%));
-    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(240, 4.8%, 97%));
-    --shadow-glow: 0 8px 32px -8px hsl(271, 91%, 65% / 0.3);
-    --shadow-card: 0 4px 16px -4px hsl(240, 5%, 75% / 0.15);
+    --gradient-primary: linear-gradient(135deg, hsl(25, 100%, 50%), hsl(152, 100%, 50%));
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(0, 0%, 97%));
+    --shadow-glow: 0 8px 32px -8px hsl(25, 100%, 50% / 0.3);
+    --shadow-card: 0 4px 16px -4px hsl(240, 5%, 75% / 0.2);
     
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 271 91% 65%;
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary: 25 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 271 91% 65%;
+    --sidebar-ring: 25 100% 50%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 10% 5%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 6%;
+    --card: 240 10% 8%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 6%;
+    --popover: 240 10% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 271 91% 65%;
+    --primary: 25 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 17 88% 65%;
+    --secondary: 152 100% 50%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 330 81% 60%;
+    --accent: 25 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 50.6%;
@@ -80,21 +80,21 @@ All colors MUST be HSL.
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 271 91% 65%;
+    --ring: 25 100% 50%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(271, 91%, 65%), hsl(330, 81%, 60%), hsl(17, 88%, 65%));
-    --gradient-card: linear-gradient(145deg, hsl(240, 10%, 8%), hsl(240, 10%, 6%));
-    --shadow-glow: 0 8px 32px -8px hsl(271, 91%, 65% / 0.4);
+    --gradient-primary: linear-gradient(135deg, hsl(25, 100%, 50%), hsl(152, 100%, 50%));
+    --gradient-card: linear-gradient(145deg, hsl(240, 10%, 10%), hsl(240, 10%, 8%));
+    --shadow-glow: 0 8px 32px -8px hsl(25, 100%, 50% / 0.4);
     --shadow-card: 0 4px 16px -4px hsl(240, 10%, 0% / 0.3);
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 271 91% 65%;
+    --sidebar-primary: 25 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 271 91% 65%;
+    --sidebar-ring: 25 100% 50%;
   }
 }
 
@@ -107,12 +107,12 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
-  /* Apply dark mode by default */
-  :root {
-    color-scheme: dark;
+  /* Typography - Bold titles and semibold buttons */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
   }
-  
-  html {
-    @apply dark;
+
+  button {
+    @apply font-semibold;
   }
 }
