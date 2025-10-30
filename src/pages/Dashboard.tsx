@@ -14,6 +14,7 @@ import MealPlanCard from "@/components/MealPlanCard";
 import { Navigation } from "@/components/Navigation";
 import TipsTabs from "@/components/TipsTabs";
 import { HydrationCard } from "@/components/HydrationCard";
+import { BannerCarousel } from "@/components/BannerCarousel";
 const motivationalPhrases = ["Você está mais forte do que pensa! 💪", "Cada dia é uma nova chance de evoluir! 🌟", "Seu corpo pode fazer muito mais do que você imagina!", "A disciplina de hoje é o corpo dos seus sonhos amanhã!", "Não desista, você está fazendo incrível! 🔥", "Transformação começa com um passo de cada vez!", "Você merece a melhor versão de si mesmo! ⭐", "Persistência é a chave do sucesso! 🎯"];
 interface Profile {
   goal?: string;
@@ -238,6 +239,9 @@ const Dashboard = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Banner Carousel */}
+        <BannerCarousel />
+
         {/* Personalized Welcome */}
         {profile && (profile.goal || profile.target_weight_kg) && (
           <Card className="p-6 mb-6 bg-gradient-card shadow-card">
