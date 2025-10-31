@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Dumbbell, Mail, Lock, User, TrendingUp } from "lucide-react";
+import { Flame, Mail, Lock, User, TrendingUp } from "lucide-react";
+import logoImage from "@/assets/logo-secando.png";
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -108,12 +109,12 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="bg-card rounded-2xl shadow-glow p-8 animate-fade-in">
           <div className="flex items-center justify-center mb-6">
-            <div className="bg-gradient-primary p-3 rounded-full animate-pulse-glow">
-              <Dumbbell className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img 
+              src={logoImage} 
+              alt="Secando em Casa Logo" 
+              className="w-64 h-auto"
+            />
           </div>
-          
-          <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-primary bg-clip-text text-transparent">Secando em casa</h1>
           <p className="text-center text-muted-foreground mb-8">
             {isLogin ? "Welcome back! Let's continue your journey." : "Start your transformation today"}
           </p>
@@ -148,7 +149,7 @@ const Auth = () => {
                   <TrendingUp className="mr-2 h-4 w-4" />
                   Log In
                 </> : <>
-                  <Dumbbell className="mr-2 h-4 w-4" />
+                  <Flame className="mr-2 h-4 w-4" />
                   Start Challenge
                 </>}
             </Button>

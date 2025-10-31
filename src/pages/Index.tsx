@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dumbbell, TrendingUp, Apple, Target, CheckCircle2, Camera, Sparkles, Droplets, BookOpen, Gift, Users, ChefHat } from "lucide-react";
-import logoImage from "@/assets/logo-dark.jpg";
+import { TrendingUp, Apple, Target, CheckCircle2, Camera, Sparkles, Droplets, BookOpen, Gift, Users, ChefHat, Flame } from "lucide-react";
+import logoImage from "@/assets/logo-secando.png";
 const Index = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -26,7 +26,7 @@ const Index = () => {
             <img 
               src={logoImage} 
               alt="Secando em Casa Logo" 
-              className="w-64 h-auto mx-auto mb-8 rounded-xl shadow-glow"
+              className="w-80 h-auto mx-auto mb-8"
             />
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Sua Transformação Começa Aqui
@@ -35,11 +35,11 @@ const Index = () => {
               Desafio completo de 30 dias com treinos, nutrição inteligente, 
               análise de alimentos por IA e suporte comunitário
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
+            <div className="flex gap-4 justify-center flex-col sm:flex-row items-center">
               <Button 
                 size="lg" 
                 onClick={() => navigate("/auth")} 
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-lg px-8 h-14"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-lg px-8 h-14 w-full sm:w-auto"
               >
                 <TrendingUp className="mr-2 h-5 w-5" />
                 Começar Gratuitamente
@@ -48,7 +48,7 @@ const Index = () => {
                 size="lg" 
                 variant="outline" 
                 onClick={() => navigate("/auth")} 
-                className="border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-lg px-8 h-14"
+                className="border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-lg px-8 h-14 w-full sm:w-auto"
               >
                 Já Tenho Conta
               </Button>
@@ -72,7 +72,7 @@ const Index = () => {
             <Card className="shadow-card hover:shadow-glow transition-all duration-300">
               <CardHeader>
                 <div className="bg-gradient-primary w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-primary-foreground">
-                  <Dumbbell className="h-6 w-6" />
+                  <Flame className="h-6 w-6" />
                 </div>
                 <CardTitle>Treinos Diários em Vídeo</CardTitle>
                 <CardDescription>
