@@ -73,8 +73,8 @@ const Auth = () => {
         });
         if (error) throw error;
         toast({
-          title: "Welcome back!",
-          description: "Successfully logged in to your account."
+          title: "Bem-vindo de volta!",
+          description: "Login realizado com sucesso."
         });
       } else {
         const {
@@ -91,14 +91,14 @@ const Auth = () => {
         });
         if (error) throw error;
         toast({
-          title: "Account created!",
-          description: "Welcome to your 30-day fitness challenge."
+          title: "Conta criada!",
+          description: "Bem-vindo ao seu desafio de 30 dias."
         });
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Erro",
         description: error.message
       });
     } finally {
@@ -116,16 +116,16 @@ const Auth = () => {
             />
           </div>
           <p className="text-center text-muted-foreground mb-8">
-            {isLogin ? "Welcome back! Let's continue your journey." : "Start your transformation today"}
+            {isLogin ? "Bem-vindo de volta! Vamos continuar sua jornada." : "Comece sua transformação hoje"}
           </p>
 
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && <div className="space-y-2">
-                <Label htmlFor="displayName" className="flex items-center gap-2">
+              <Label htmlFor="displayName" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Display Name
+                  Nome
                 </Label>
-                <Input id="displayName" type="text" placeholder="Your name" value={displayName} onChange={e => setDisplayName(e.target.value)} className="transition-all focus:shadow-glow" />
+                <Input id="displayName" type="text" placeholder="Seu nome" value={displayName} onChange={e => setDisplayName(e.target.value)} className="transition-all focus:shadow-glow" />
               </div>}
 
             <div className="space-y-2">
@@ -139,25 +139,25 @@ const Auth = () => {
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
                 <Lock className="h-4 w-4" />
-                Password
+                Senha
               </Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="transition-all focus:shadow-glow" />
             </div>
 
             <Button type="submit" disabled={loading} className="w-full bg-gradient-primary hover:opacity-90 transition-all shadow-glow">
-              {loading ? "Loading..." : isLogin ? <>
+              {loading ? "Carregando..." : isLogin ? <>
                   <TrendingUp className="mr-2 h-4 w-4" />
-                  Log In
+                  Entrar
                 </> : <>
                   <Flame className="mr-2 h-4 w-4" />
-                  Start Challenge
+                  Iniciar Desafio
                 </>}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+              {isLogin ? "Não tem uma conta? Cadastre-se" : "Já tem uma conta? Entrar"}
             </button>
           </div>
         </div>
