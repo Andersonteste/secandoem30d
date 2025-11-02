@@ -273,14 +273,16 @@ const Dashboard = () => {
       <header 
         className="text-white px-4 shadow-glow relative"
         style={{
-          height: '140px',
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 24px)',
+          paddingBottom: '10px',
+          minHeight: '120px',
           background: 'linear-gradient(90deg, #ff8a00, #00ff88)',
           borderRadius: '0 0 18px 18px'
         }}
       >
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <h1 className="font-bold text-[18px] text-white">
+          <div className="flex flex-col gap-1 relative z-10">
+            <h1 className="font-bold text-[18px] text-white m-0 relative z-10">
               {(() => {
                 const hour = new Date().getHours();
                 const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -288,12 +290,12 @@ const Dashboard = () => {
                 return `${greeting}, ${userName}!`;
               })()}
             </h1>
-            <p className="text-[14px]" style={{ color: 'rgba(255,255,255,0.85)' }}>
+            <p className="text-[14px] m-0 relative z-10" style={{ color: 'rgba(255,255,255,0.85)' }}>
               Você está no dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} do desafio. Continue firme! 💪
             </p>
-            <p className="text-[13px]" style={{ color: '#ddd' }}>Desafio de 30 Dias</p>
+            <p className="text-[13px] m-0 relative z-10" style={{ color: '#ddd' }}>Desafio de 30 Dias</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative z-10">
             <Button 
               variant="ghost" 
               size="icon" 
