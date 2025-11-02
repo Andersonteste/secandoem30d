@@ -263,13 +263,13 @@ const Dashboard = () => {
             <div className="flex flex-col items-center gap-4">
               <CircularProgress
                 percentage={
-                  profile.weight_kg > profile.target_weight_kg
-                    ? Math.min(
-                        ((profile.weight_kg - (profile.weight_kg - (profile.weight_kg - profile.target_weight_kg))) / 
-                         (profile.weight_kg - profile.target_weight_kg)) * 100,
-                        100
+                  profile.weight_kg <= profile.target_weight_kg
+                    ? 100
+                    : Math.max(
+                        0,
+                        ((profile.weight_kg - profile.target_weight_kg) / 
+                         (profile.weight_kg - profile.target_weight_kg)) * 100
                       )
-                    : 0
                 }
                 size={120}
                 strokeWidth={10}
@@ -288,7 +288,7 @@ const Dashboard = () => {
                 <p className="text-sm text-foreground">
                   Você já perdeu <span className="font-bold text-primary">
                     {Math.max(0, profile.weight_kg - profile.target_weight_kg).toFixed(1)}kg
-                  </span> do seu objetivo de {profile.weight_kg}kg → {profile.target_weight_kg}kg!
+                  </span> do seu objetivo de <span className="font-semibold">{profile.weight_kg}kg → {profile.target_weight_kg}kg!</span>
                 </p>
               </div>
             </div>
