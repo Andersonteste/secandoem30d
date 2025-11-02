@@ -11,6 +11,7 @@ import { ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, Cale
 import { Navigation } from "@/components/Navigation";
 import { format, differenceInDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CircularProgress } from "@/components/CircularProgress";
 
 interface Profile {
   display_name: string;
@@ -49,6 +50,7 @@ const Profile = () => {
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [newWeight, setNewWeight] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [completedDays, setCompletedDays] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -57,6 +59,7 @@ const Profile = () => {
       if (session?.user) {
         setUser(session.user);
         loadProfile(session.user.id);
+        loadChallengeProgress(session.user.id);
       } else {
         navigate("/auth");
       }
@@ -94,6 +97,18 @@ const Profile = () => {
 
     if (logs) {
       setWeightLogs(logs);
+    }
+  };
+
+  const loadChallengeProgress = async (userId: string) => {
+    const { data } = await (supabase as any)
+      .from("challenge_progress")
+      .select("day_num")
+      .eq("user_id", userId)
+      .eq("completed", true);
+
+    if (data) {
+      setCompletedDays(data.length);
     }
   };
 
@@ -154,6 +169,13 @@ const Profile = () => {
         title: "Pesagem Registrada!",
         description: `Peso registrado: ${weight}kg`,
       });
+      
+      // Update profile weight_kg
+      await (supabase as any)
+        .from("profiles")
+        .update({ weight_kg: weight })
+        .eq("id", user.id);
+      
       setNewWeight("");
       loadProfile(user.id);
     }
@@ -296,6 +318,85 @@ const Profile = () => {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* Circular Progress Card */}
+        <Card className="p-6 bg-gradient-card shadow-card mb-6">
+          <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Progresso do Desafio
+          </h3>
+          
+          <div className="flex flex-col items-center justify-center mb-6">
+            <CircularProgress
+              percentage={(completedDays / 30) * 100}
+              size={120}
+              strokeWidth={8}
+              activeColor="#00ff88"
+              backgroundColor="rgba(255,255,255,0.1)"
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground">
+                  {completedDays}/30
+                </div>
+                <div className="text-xs text-muted-foreground">dias</div>
+                {profile.weight_kg && profile.target_weight_kg && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Meta: {profile.weight_kg} → {profile.target_weight_kg}kg
+                  </div>
+                )}
+              </div>
+            </CircularProgress>
+            
+            {/* Next Weigh-In and Button */}
+            <div className="mt-6 text-center space-y-3 w-full">
+              {profile.created_at && (
+                <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Próxima pesagem: {getNextWeighInDate() ? format(getNextWeighInDate()!, "dd 'de' MMMM", { locale: ptBR }) : "Não definido"}
+                </div>
+              )}
+              
+              <div className="flex gap-2 max-w-md mx-auto">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={newWeight}
+                  onChange={(e) => setNewWeight(e.target.value)}
+                  placeholder="Ex: 70.5"
+                  className="flex-1"
+                />
+                <Button
+                  onClick={addWeightLog}
+                  disabled={loading || !newWeight}
+                  className="bg-gradient-primary hover:opacity-90"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Registrar nova pesagem
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Weight Progress */}
+          {getWeightProgress() && (
+            <div className="bg-gradient-primary/10 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-green-500" />
+                  <span className="font-semibold">Progresso Total de Peso</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-green-500">
+                    {getWeightProgress()!.diff > 0 ? '-' : '+'}{Math.abs(getWeightProgress()!.diff).toFixed(1)}kg
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {getWeightProgress()!.percentage}% do peso inicial
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+
         {/* IMC and Stats Card */}
         <Card className="p-6 bg-gradient-card shadow-card mb-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -424,62 +525,8 @@ const Profile = () => {
               <Scale className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Controle de Peso</h3>
-              <p className="text-sm text-muted-foreground">Registre seu peso a cada 7 dias</p>
-            </div>
-          </div>
-
-          {/* Next Weigh-In Date */}
-          {profile.created_at && (
-            <div className="bg-primary/10 p-3 rounded-lg mb-4 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span className="text-sm">
-                Próxima pesagem: {getNextWeighInDate() ? format(getNextWeighInDate()!, "dd 'de' MMMM", { locale: ptBR }) : "Não definido"}
-              </span>
-            </div>
-          )}
-
-          {/* Weight Progress */}
-          {getWeightProgress() && (
-            <div className="bg-gradient-primary/10 p-4 rounded-lg mb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-green-500" />
-                  <span className="font-semibold">Progresso Total</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-500">
-                    {getWeightProgress()!.diff > 0 ? '-' : '+'}{Math.abs(getWeightProgress()!.diff).toFixed(1)}kg
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {getWeightProgress()!.percentage}% do peso inicial
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Add New Weight */}
-          <div className="space-y-3 mb-4">
-            <Label htmlFor="new_weight">Registrar Nova Pesagem</Label>
-            <div className="flex gap-2">
-              <Input
-                id="new_weight"
-                type="number"
-                step="0.1"
-                value={newWeight}
-                onChange={(e) => setNewWeight(e.target.value)}
-                placeholder="Ex: 70.5"
-                className="flex-1"
-              />
-              <Button
-                onClick={addWeightLog}
-                disabled={loading || !newWeight}
-                className="bg-gradient-primary hover:opacity-90"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Salvar
-              </Button>
+              <h3 className="text-lg font-semibold">Histórico de Pesagens</h3>
+              <p className="text-sm text-muted-foreground">Acompanhe seu peso ao longo do tempo</p>
             </div>
           </div>
 
