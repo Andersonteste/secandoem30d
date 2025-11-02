@@ -15,6 +15,7 @@ import { Navigation } from "@/components/Navigation";
 import TipsTabs from "@/components/TipsTabs";
 import { HydrationCard } from "@/components/HydrationCard";
 import { BannerCarousel } from "@/components/BannerCarousel";
+import { CircularProgress } from "@/components/CircularProgress";
 const motivationalPhrases = ["Você está mais forte do que pensa! 💪", "Cada dia é uma nova chance de evoluir! 🌟", "Seu corpo pode fazer muito mais do que você imagina!", "A disciplina de hoje é o corpo dos seus sonhos amanhã!", "Não desista, você está fazendo incrível! 🔥", "Transformação começa com um passo de cada vez!", "Você merece a melhor versão de si mesmo! ⭐", "Persistência é a chave do sucesso! 🎯"];
 interface Profile {
   goal?: string;
@@ -255,6 +256,44 @@ const Dashboard = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Banner Carousel */}
         <BannerCarousel />
+
+        {/* Weight/IMC Progress Circle */}
+        {profile && profile.weight_kg && profile.target_weight_kg && (
+          <Card className="p-6 mb-6 bg-gradient-card shadow-card">
+            <div className="flex flex-col items-center gap-4">
+              <CircularProgress
+                percentage={
+                  profile.weight_kg > profile.target_weight_kg
+                    ? Math.min(
+                        ((profile.weight_kg - (profile.weight_kg - (profile.weight_kg - profile.target_weight_kg))) / 
+                         (profile.weight_kg - profile.target_weight_kg)) * 100,
+                        100
+                      )
+                    : 0
+                }
+                size={120}
+                strokeWidth={10}
+                activeColor="#00FF7F"
+                backgroundColor="rgba(255,255,255,0.1)"
+              >
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">
+                    {profile.weight_kg}kg
+                  </p>
+                  <p className="text-xs text-muted-foreground">Peso Atual</p>
+                </div>
+              </CircularProgress>
+              
+              <div className="text-center">
+                <p className="text-sm text-foreground">
+                  Você já perdeu <span className="font-bold text-primary">
+                    {Math.max(0, profile.weight_kg - profile.target_weight_kg).toFixed(1)}kg
+                  </span> do seu objetivo de {profile.weight_kg}kg → {profile.target_weight_kg}kg!
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Personalized Welcome */}
         {profile && (profile.goal || profile.target_weight_kg) && (
