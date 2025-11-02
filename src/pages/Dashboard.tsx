@@ -213,25 +213,39 @@ const Dashboard = () => {
   return <div className="min-h-screen bg-background pb-20 md:pt-20">
       <Navigation />
       {/* Header */}
-      <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Dumbbell className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="font-bold text-sm">Secando em casa</h1>
-              <p className="opacity-90 text-xs">{completedDays.length} de 30 dias concluídos</p>
+      <header 
+        className="text-white px-4 shadow-glow relative"
+        style={{
+          height: '140px',
+          background: 'linear-gradient(90deg, #ff8a00, #00ff88)',
+          borderRadius: '0 0 18px 18px'
+        }}
+      >
+        <div className="max-w-6xl mx-auto h-full flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <h1 className="font-bold text-[20px] text-white">Secando em Casa</h1>
+            <p className="text-[14px]" style={{ color: '#ddd' }}>Desafio de 30 Dias</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[16px]">🔥</span>
+              <p className="text-[14px] text-white/90">
+                Dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} de 30 | {30 - completedDays.length} dias restantes
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-primary-foreground hover:bg-white/20">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate("/profile")} 
+              className="text-white hover:bg-white/20"
+              title="Progresso Detalhado"
+            >
+              <TrendingUp className="h-6 w-6" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-white hover:bg-white/20">
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-primary-foreground hover:bg-white/20">
-              <UserIcon className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-primary-foreground hover:bg-white/20">
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-white hover:bg-white/20">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
