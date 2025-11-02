@@ -22,6 +22,7 @@ interface Profile {
   target_weight_kg?: number;
   weight_kg?: number;
   experience_level?: string;
+  display_name?: string;
 }
 
 interface WeightProgress {
@@ -112,7 +113,7 @@ const Dashboard = () => {
     // Load profile data
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("goal, target_weight_kg, weight_kg, experience_level")
+      .select("goal, target_weight_kg, weight_kg, experience_level, display_name")
       .eq("id", userId)
       .single();
     
@@ -264,14 +265,18 @@ const Dashboard = () => {
       >
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="font-bold text-[20px] text-white">Secando em Casa</h1>
-            <p className="text-[14px]" style={{ color: '#ddd' }}>Desafio de 30 Dias</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[16px]">🔥</span>
-              <p className="text-[14px] text-white/90">
-                Dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} de 30 | {30 - completedDays.length} dias restantes
-              </p>
-            </div>
+            <h1 className="font-bold text-[18px] text-white">
+              {(() => {
+                const hour = new Date().getHours();
+                const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+                const userName = profile?.display_name || 'Atleta';
+                return `${greeting}, ${userName}!`;
+              })()}
+            </h1>
+            <p className="text-[14px]" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              Você está no dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} do desafio. Continue firme! 💪
+            </p>
+            <p className="text-[13px]" style={{ color: '#ddd' }}>Desafio de 30 Dias</p>
           </div>
           <div className="flex items-center gap-3">
             <Button 
@@ -300,80 +305,89 @@ const Dashboard = () => {
         {/* Personalized Welcome with Weight Progress */}
         {profile && (profile.goal || profile.target_weight_kg || weightProgress) && (
           <Card className="p-6 mb-6 bg-gradient-card shadow-card">
-            {/* Weight Progress Circle */}
-            {weightProgress && (
-              <div className="flex flex-col items-center gap-4 mb-6 pb-6 border-b border-border/50">
-                <CircularProgress
-                  percentage={weightProgress.progresso_percent}
-                  size={120}
-                  strokeWidth={10}
-                  activeColor="#00FF7F"
-                  backgroundColor="rgba(255,255,255,0.1)"
-                >
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-foreground">
-                      {weightProgress.peso_atual.toFixed(1)}kg
-                    </p>
-                    <p className="text-xs text-muted-foreground">Peso Atual</p>
+            <div className="flex flex-col md:flex-row gap-4 w-full">
+              {/* Coluna 1: Peso e Progresso */}
+              {weightProgress && (
+                <div className="flex-1 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center">
+                  <CircularProgress
+                    percentage={weightProgress.progresso_percent}
+                    size={120}
+                    strokeWidth={10}
+                    activeColor="#00FF7F"
+                    backgroundColor="rgba(255,255,255,0.1)"
+                  >
+                    <div className="text-center">
+                      <p className="text-[20px] font-bold text-foreground">
+                        {weightProgress.peso_atual.toFixed(1)}kg
+                      </p>
+                      <p className="text-[13px] text-muted-foreground">Peso Atual</p>
+                    </div>
+                  </CircularProgress>
+                  
+                  <div className="text-center mt-3">
+                    {weightProgress.peso_perdido > 0 ? (
+                      <p className="text-[13px] text-foreground leading-relaxed">
+                        Você já perdeu <span className="font-bold text-primary">
+                          {weightProgress.peso_perdido.toFixed(1)}kg
+                        </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
+                      </p>
+                    ) : weightProgress.peso_perdido === 0 ? (
+                      <p className="text-[13px] text-muted-foreground">
+                        Ainda não há perda registrada. Continue firme no seu objetivo!
+                      </p>
+                    ) : (
+                      <p className="text-[13px] text-muted-foreground">
+                        Você ganhou {Math.abs(weightProgress.peso_perdido).toFixed(1)}kg desde o início. Foque novamente!
+                      </p>
+                    )}
                   </div>
-                </CircularProgress>
-                
-                <div className="text-center">
-                  {weightProgress.peso_perdido > 0 ? (
-                    <p className="text-sm text-foreground">
-                      Você já perdeu <span className="font-bold text-primary">
-                        {weightProgress.peso_perdido.toFixed(1)}kg
-                      </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Ainda não há perda registrada. Continue firme no seu objetivo!
-                    </p>
+                </div>
+              )}
+              
+              {/* Coluna 2: Programa Personalizado */}
+              <div className="flex-1 bg-white/5 rounded-xl p-4">
+                <h3 className="text-[16px] font-bold mb-3 flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Seu Programa Personalizado
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {profile.goal && (
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Objetivo</p>
+                        <p className="font-medium text-[13px]">{getGoalLabel(profile.goal)}</p>
+                      </div>
+                    </div>
+                  )}
+                  {profile.target_weight_kg && profile.weight_kg && (
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Target className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Meta de Peso</p>
+                        <p className="font-medium text-[13px]">
+                          {profile.weight_kg}kg → {profile.target_weight_kg}kg
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {profile.experience_level && (
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-2 rounded-full">
+                        <Activity className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Nível</p>
+                        <p className="font-medium text-[13px]">{getLevelLabel(profile.experience_level)}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
-            )}
-            
-            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Seu Programa Personalizado
-            </h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {profile.goal && (
-                <div className="flex items-center gap-2">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Objetivo</p>
-                    <p className="font-medium">{getGoalLabel(profile.goal)}</p>
-                  </div>
-                </div>
-              )}
-              {profile.target_weight_kg && profile.weight_kg && (
-                <div className="flex items-center gap-2">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Target className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Meta de Peso</p>
-                    <p className="font-medium">
-                      {profile.weight_kg}kg → {profile.target_weight_kg}kg
-                    </p>
-                  </div>
-                </div>
-              )}
-              {profile.experience_level && (
-                <div className="flex items-center gap-2">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Activity className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Nível</p>
-                    <p className="font-medium">{getLevelLabel(profile.experience_level)}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </Card>
         )}
