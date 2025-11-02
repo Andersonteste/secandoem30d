@@ -1,65 +1,234 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Users, Heart, MessageCircle, Share2, Award, Trophy, TrendingUp } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { CreatePostCard } from "@/components/community/CreatePostCard";
+import { PostCard } from "@/components/community/PostCard";
+import { CommunityStats } from "@/components/community/CommunityStats";
+import { BannerCarousel } from "@/components/BannerCarousel";
 
-interface Testimonial {
+interface Post {
   id: string;
-  name: string;
-  date: string;
-  badge: string;
-  content: string;
-  image?: string;
-  likes: number;
-  comments: number;
+  user_id: string;
+  texto: string;
+  imagem_url?: string;
+  created_at: string;
+  profiles?: {
+    display_name?: string;
+  };
 }
 
-const testimonials: Testimonial[] = [
-  {
-    id: "1",
-    name: "Maria Silva",
-    date: "há 2 dias",
-    badge: "Primeira vez HIIT",
-    content: "Consegui completar meu primeiro treino HIIT completo! 🔥 A sensação é INCRÍVEL! Obrigada por todo o apoio!",
-    likes: 12,
-    comments: 5,
-  },
-  {
-    id: "2",
-    name: "João Pedro",
-    date: "há 3 dias",
-    badge: "Finalizado",
-    content: "Hoje foi dia de preparar uma refeição super saudável! 🥗 Quem disse que comida fitness não pode ser focada na alimentação? 🥘",
-    image: "healthy-meal",
-    likes: 8,
-    comments: 3,
-  },
-  {
-    id: "3",
-    name: "Ana Costa",
-    date: "há 5 dias",
-    badge: "3 dias Realizados",
-    content: "Pessoal, consegui bater minha meta de 2L de água pelo 7º dia seguido! 💧💦 Pele tá super melhorando!",
-    likes: 15,
-    comments: 7,
-  },
-  {
-    id: "4",
-    name: "Carlos Mendes",
-    date: "há 1 semana",
-    badge: "Desafio Completo",
-    content: "FINALIZEI O DESAFIO 30 dias de transformação completa! Obrigada a todos pela jornada! 💪🏆 Perdi 6kg e me sinto incrível! 🎉💕",
-    likes: 28,
-    comments: 12,
-  },
-];
+interface PostWithStats extends Post {
+  likesCount: number;
+  commentsCount: number;
+  isLiked: boolean;
+  badges: string[];
+}
 
 const Community = () => {
   const navigate = useNavigate();
-  const [groupUrl] = useState("https://chat.whatsapp.com/example-group-link");
+  const [posts, setPosts] = useState<PostWithStats[]>([]);
+  const [groupUrl, setGroupUrl] = useState("");
+  const [membersCount, setMembersCount] = useState(0);
+  const [todayPostsCount, setTodayPostsCount] = useState(0);
+  const [engagementRate, setEngagementRate] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCommunityData();
+  }, []);
+
+  const loadCommunityData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadPosts(),
+        loadSettings(),
+        loadStats()
+      ]);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Erro ao carregar dados da comunidade"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSettings = async () => {
+    const { data } = await supabase
+      .from("community_settings")
+      .select("link_grupo_vip")
+      .single();
+    
+    if (data) {
+      setGroupUrl(data.link_grupo_vip);
+    }
+  };
+
+  const loadStats = async () => {
+    // Count members
+    const { count: members } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
+    
+    setMembersCount(members || 0);
+
+    // Count today's posts
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count: todayPosts } = await supabase
+      .from("posts_comunidade")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", today.toISOString());
+    
+    setTodayPostsCount(todayPosts || 0);
+
+    // Calculate engagement rate
+    const { data: allPosts } = await supabase
+      .from("posts_comunidade")
+      .select("id");
+    
+    if (allPosts && allPosts.length > 0) {
+      const { count: totalLikes } = await supabase
+        .from("post_likes")
+        .select("*", { count: "exact", head: true });
+      
+      const { count: totalComments } = await supabase
+        .from("post_comments")
+        .select("*", { count: "exact", head: true });
+      
+      const engagement = Math.round(((totalLikes || 0) + (totalComments || 0)) / allPosts.length * 100);
+      setEngagementRate(Math.min(engagement, 100));
+    }
+  };
+
+  const loadPosts = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { data: postsData, error } = await supabase
+      .from("posts_comunidade")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    if (postsData) {
+      // Get profiles data separately
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, display_name");
+
+      const postsWithStats = await Promise.all(
+        postsData.map(async (post) => {
+          const profile = profilesData?.find(p => p.id === post.user_id);
+          const { count: likesCount } = await supabase
+            .from("post_likes")
+            .select("*", { count: "exact", head: true })
+            .eq("post_id", post.id);
+
+          const { count: commentsCount } = await supabase
+            .from("post_comments")
+            .select("*", { count: "exact", head: true })
+            .eq("post_id", post.id);
+
+          let isLiked = false;
+          if (user) {
+            const { data: likeData } = await supabase
+              .from("post_likes")
+              .select("id")
+              .eq("post_id", post.id)
+              .eq("user_id", user.id)
+              .single();
+            
+            isLiked = !!likeData;
+          }
+
+          // Get user badges
+          const badges = await getUserBadges(post.user_id);
+
+          return {
+            ...post,
+            profiles: profile ? { display_name: profile.display_name } : undefined,
+            likesCount: likesCount || 0,
+            commentsCount: commentsCount || 0,
+            isLiked,
+            badges
+          };
+        })
+      );
+
+      setPosts(postsWithStats);
+    }
+  };
+
+  const getUserBadges = async (userId: string): Promise<string[]> => {
+    const badges: string[] = [];
+
+    // Check for 30 days challenge completion
+    const { count: completedDays } = await supabase
+      .from("challenge_progress")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("completed", true);
+
+    if (completedDays && completedDays >= 30) {
+      badges.push("🥇 Concluiu 30 dias");
+    }
+
+    // Check for hydration streak (simplified - would need more complex logic)
+    const { count: postsCount } = await supabase
+      .from("posts_comunidade")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (postsCount && postsCount >= 5) {
+      badges.push("💬 Postou 5 vezes");
+    }
+
+    return badges;
+  };
+
+  const handleLikeToggle = async (postId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      if (post.isLiked) {
+        // Unlike
+        await supabase
+          .from("post_likes")
+          .delete()
+          .eq("post_id", postId)
+          .eq("user_id", user.id);
+      } else {
+        // Like
+        await supabase
+          .from("post_likes")
+          .insert({
+            post_id: postId,
+            user_id: user.id
+          });
+      }
+
+      loadPosts();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pt-20">
@@ -90,116 +259,74 @@ const Community = () => {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Community Stats */}
-        <Card className="p-6 mb-8 bg-card border-border">
-          <h2 className="text-lg font-semibold mb-4">Nossa Comunidade</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">1.2k</div>
-              <div className="text-xs text-muted-foreground">Membros</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">245</div>
-              <div className="text-xs text-muted-foreground">Posts Hoje</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">89%</div>
-              <div className="text-xs text-muted-foreground">Taxa Sucesso</div>
-            </div>
-          </div>
-        </Card>
+        <CommunityStats
+          membersCount={membersCount}
+          todayPostsCount={todayPostsCount}
+          engagementRate={engagementRate}
+        />
 
-        {/* CTA Card */}
-        <Card className="p-6 mb-8 bg-gradient-primary text-primary-foreground shadow-glow">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="bg-white/20 p-2 rounded-full">
-              <MessageCircle className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-1">Compartilhe sua experiência com o desafio...</h3>
-              <Button 
-                variant="secondary" 
-                size="sm"
-                className="mt-2"
-              >
-                Publicar
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* Feed Title */}
-        <h2 className="text-xl font-bold mb-4">Feed da Comunidade</h2>
-
-        {/* Testimonials Feed */}
-        <div className="space-y-4">
-          {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="p-4 bg-card border-border">
-              {/* User Header */}
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold">
-                  {testimonial.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{testimonial.name}</h3>
-                    <span className="text-xs text-muted-foreground">{testimonial.date}</span>
-                  </div>
-                  <Badge variant="secondary" className="text-xs mt-1">
-                    {testimonial.badge === "Finalizado" ? (
-                      <><Trophy className="h-3 w-3 mr-1" />{testimonial.badge}</>
-                    ) : testimonial.badge === "Desafio Completo" ? (
-                      <><Award className="h-3 w-3 mr-1" />{testimonial.badge}</>
-                    ) : (
-                      <><TrendingUp className="h-3 w-3 mr-1" />{testimonial.badge}</>
-                    )}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Content */}
-              <p className="text-sm mb-3">{testimonial.content}</p>
-
-              {/* Image placeholder if exists */}
-              {testimonial.image && (
-                <div className="w-full h-48 rounded-lg bg-muted mb-3 flex items-center justify-center">
-                  <span className="text-muted-foreground text-sm">Imagem: {testimonial.image}</span>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-4 pt-3 border-t border-border">
-                <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
-                  <Heart className="h-4 w-4" />
-                  <span>{testimonial.likes}</span>
-                </button>
-                <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors">
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{testimonial.comments}</span>
-                </button>
-                <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors ml-auto">
-                  <Share2 className="h-4 w-4" />
-                </button>
-              </div>
-            </Card>
-          ))}
+        {/* Banners */}
+        <div className="my-8">
+          <BannerCarousel />
         </div>
 
-        {/* Group CTA Footer */}
-        <Card className="mt-8 p-6 bg-gradient-primary text-primary-foreground text-center shadow-glow">
-          <MessageCircle className="h-12 w-12 mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">Chat com Grupo Real</h3>
-          <p className="text-sm opacity-90 mb-4">
-            Entre no grupo VIP para conversar ao vivo com outros participantes!
-          </p>
-          <Button
-            variant="secondary"
-            size="lg"
-            className="font-semibold"
-            onClick={() => window.open(groupUrl, "_blank")}
-          >
-            Entrar no Grupo
-          </Button>
-        </Card>
+        {/* Create Post Card */}
+        <div className="mb-8">
+          <CreatePostCard onPostCreated={loadPosts} />
+        </div>
+
+        {/* Feed Title */}
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <span className="text-2xl">🔥</span>
+          Feed da Comunidade
+        </h2>
+
+        {/* Posts Feed */}
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Carregando posts...
+          </div>
+        ) : posts.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground">
+              Nenhum post ainda. Seja o primeiro a compartilhar sua experiência! 💪
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                likesCount={post.likesCount}
+                commentsCount={post.commentsCount}
+                isLiked={post.isLiked}
+                badges={post.badges}
+                onLikeToggle={() => handleLikeToggle(post.id)}
+                onCommentAdded={loadPosts}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Group VIP CTA Footer */}
+        {groupUrl && (
+          <Card className="mt-8 p-6 bg-gradient-primary text-primary-foreground text-center shadow-glow">
+            <div className="text-5xl mb-4">💬</div>
+            <h3 className="text-xl font-bold mb-2">Entre no Grupo VIP 🔥</h3>
+            <p className="text-sm opacity-90 mb-4">
+              Conecte-se com outros participantes em tempo real no WhatsApp!
+            </p>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="font-semibold"
+              onClick={() => window.open(groupUrl, "_blank")}
+            >
+              👉 Entrar no Grupo VIP
+            </Button>
+          </Card>
+        )}
       </div>
     </div>
   );

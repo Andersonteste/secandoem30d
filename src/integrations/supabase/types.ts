@@ -101,6 +101,24 @@ export type Database = {
         }
         Relationships: []
       }
+      community_settings: {
+        Row: {
+          id: string
+          link_grupo_vip: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          link_grupo_vip?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          link_grupo_vip?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_meals: {
         Row: {
           created_at: string | null
@@ -154,6 +172,94 @@ export type Database = {
           id?: string
           notes?: string | null
           photos?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_comments: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          texto: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          texto: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          texto?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_comunidade"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_comunidade"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts_comunidade: {
+        Row: {
+          created_at: string
+          id: string
+          imagem_url: string | null
+          texto: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          texto: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          imagem_url?: string | null
+          texto?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
