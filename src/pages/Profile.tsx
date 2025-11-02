@@ -24,6 +24,7 @@ interface Profile {
   experience_level: string | null;
   available_days: number | null;
   dietary_restrictions: string[] | null;
+  initial_weight_kg?: number | null;
 }
 
 interface WeightLog {
@@ -150,6 +151,25 @@ const Profile = () => {
     }
 
     setLoading(true);
+    
+    // Check if initial weight needs to be set
+    if (!profile.initial_weight_kg) {
+      await (supabase as any)
+        .from("profiles")
+        .update({ 
+          weight_kg: weight,
+          initial_weight_kg: weight // Save initial weight only once
+        })
+        .eq("id", user.id);
+    } else {
+      // Just update current weight
+      await (supabase as any)
+        .from("profiles")
+        .update({ weight_kg: weight })
+        .eq("id", user.id);
+    }
+    
+    // Add to weight logs
     const { error } = await (supabase as any)
       .from("weight_logs")
       .insert({
@@ -169,12 +189,6 @@ const Profile = () => {
         title: "Pesagem Registrada!",
         description: `Peso registrado: ${weight}kg`,
       });
-      
-      // Update profile weight_kg
-      await (supabase as any)
-        .from("profiles")
-        .update({ weight_kg: weight })
-        .eq("id", user.id);
       
       setNewWeight("");
       loadProfile(user.id);

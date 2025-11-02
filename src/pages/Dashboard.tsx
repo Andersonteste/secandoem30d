@@ -23,6 +23,7 @@ interface Profile {
   weight_kg?: number;
   experience_level?: string;
   display_name?: string;
+  initial_weight_kg?: number;
 }
 
 interface WeightProgress {
@@ -113,28 +114,27 @@ const Dashboard = () => {
     // Load profile data
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("goal, target_weight_kg, weight_kg, experience_level, display_name")
+      .select("goal, target_weight_kg, weight_kg, experience_level, display_name, initial_weight_kg")
       .eq("id", userId)
       .single();
     
     if (profileData) {
       setProfile(profileData);
       
-      // Load weight progress - get first weight log for initial weight
-      const { data: firstWeightLog } = await supabase
-        .from("weight_logs")
-        .select("weight_kg")
-        .eq("user_id", userId)
-        .order("measured_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      // Initial weight: use initial_weight_kg (saved only once)
+      // If not set, use current weight_kg and save it as initial
+      let peso_inicial = Number(profileData.initial_weight_kg || 0);
       
-      // Initial weight: first log or profile weight
-      const peso_inicial = firstWeightLog 
-        ? Number(firstWeightLog.weight_kg) 
-        : Number(profileData.weight_kg || 0);
+      // If no initial weight is recorded, set it now
+      if (!peso_inicial && profileData.weight_kg) {
+        peso_inicial = Number(profileData.weight_kg);
+        await supabase
+          .from("profiles")
+          .update({ initial_weight_kg: peso_inicial })
+          .eq("id", userId);
+      }
       
-      // Current weight: profile weight (updated regularly)
+      // Current weight: profile weight (updated with each new weighing)
       const peso_atual = Number(profileData.weight_kg || peso_inicial);
       const peso_meta = Number(profileData.target_weight_kg || 0);
       
