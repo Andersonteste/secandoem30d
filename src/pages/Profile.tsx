@@ -12,6 +12,7 @@ import { Navigation } from "@/components/Navigation";
 import { format, differenceInDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CircularProgress } from "@/components/CircularProgress";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Profile {
   display_name: string;
@@ -86,6 +87,7 @@ const Profile = () => {
         experience_level: data.experience_level,
         available_days: data.available_days,
         dietary_restrictions: data.dietary_restrictions,
+        initial_weight_kg: data.initial_weight_kg,
       });
     }
 
@@ -261,15 +263,15 @@ const Profile = () => {
   };
 
   const getWeightProgress = () => {
-    if (weightLogs.length < 2) return null;
+    if (!profile.initial_weight_kg || weightLogs.length === 0) return null;
     
+    const inicial = profile.initial_weight_kg;
     const latest = weightLogs[0].weight_kg;
-    const oldest = weightLogs[weightLogs.length - 1].weight_kg;
-    const diff = oldest - latest;
+    const diff = inicial - latest;
     
     return {
       diff: diff,
-      percentage: ((diff / oldest) * 100).toFixed(1)
+      percentage: ((diff / inicial) * 100).toFixed(1)
     };
   };
 
@@ -354,7 +356,7 @@ const Profile = () => {
                 <div className="text-xs text-muted-foreground">dias</div>
                 {profile.weight_kg && profile.target_weight_kg && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    Meta: {profile.weight_kg} → {profile.target_weight_kg}kg
+                    Meta: {weightLogs.length > 0 ? weightLogs[0].weight_kg : profile.weight_kg} → {profile.target_weight_kg}kg
                   </div>
                 )}
               </div>
@@ -432,10 +434,19 @@ const Profile = () => {
             )}
             
             {/* Peso Atual */}
-            {profile.weight_kg && (
+            {weightLogs.length > 0 && (
               <div className="text-center p-4 bg-background/50 rounded-lg border">
                 <p className="text-sm text-muted-foreground mb-1">Peso Atual</p>
-                <p className="text-3xl font-bold text-primary">{profile.weight_kg}</p>
+                <p className="text-3xl font-bold text-primary">{weightLogs[0].weight_kg}</p>
+                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+              </div>
+            )}
+            
+            {/* Peso Inicial */}
+            {profile.initial_weight_kg && (
+              <div className="text-center p-4 bg-background/50 rounded-lg border">
+                <p className="text-sm text-muted-foreground mb-1">Peso Inicial</p>
+                <p className="text-3xl font-bold text-primary">{profile.initial_weight_kg}</p>
                 <p className="text-xs mt-1 text-muted-foreground">kg</p>
               </div>
             )}
@@ -543,6 +554,50 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground">Acompanhe seu peso ao longo do tempo</p>
             </div>
           </div>
+
+          {/* Weight Evolution Chart */}
+          {weightLogs.length > 1 && (
+            <div className="mb-6">
+              <h4 className="font-semibold text-sm mb-3">Evolução do Peso</h4>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart 
+                  data={[...weightLogs].reverse().map(log => ({
+                    data: format(new Date(log.measured_at), "dd/MM"),
+                    peso: log.weight_kg
+                  }))}
+                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey="data" 
+                    stroke="currentColor" 
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="currentColor" 
+                    style={{ fontSize: '12px' }}
+                    domain={['dataMin - 2', 'dataMax + 2']}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="peso" 
+                    stroke="#00ff88" 
+                    strokeWidth={3}
+                    dot={{ fill: '#00ff88', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
           {/* Weight History */}
           {weightLogs.length > 0 && (

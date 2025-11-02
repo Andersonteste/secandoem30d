@@ -119,32 +119,42 @@ const Dashboard = () => {
       .eq("id", userId)
       .single();
     
+    // Load weight logs to get current weight from latest log
+    const { data: weightLogs } = await (supabase as any)
+      .from("weight_logs")
+      .select("weight_kg, measured_at")
+      .eq("user_id", userId)
+      .order("measured_at", { ascending: false })
+      .limit(1);
+    
     if (profileData) {
       setProfile(profileData);
       
       // Initial weight: use initial_weight_kg (saved only once)
-      // If not set, use current weight_kg and save it as initial
       const inicial = Number(profileData.initial_weight_kg || 0);
       
-      // If no initial weight is recorded, set it now
-      if (!inicial && profileData.weight_kg) {
-        const newInicial = Number(profileData.weight_kg);
+      // Current weight: get from latest weight_log if available, otherwise from profile
+      const atual = weightLogs && weightLogs.length > 0 
+        ? Number(weightLogs[0].weight_kg) 
+        : Number(profileData.weight_kg || inicial);
+      
+      const meta = Number(profileData.target_weight_kg || 0);
+      
+      // If no initial weight but has current weight, set initial weight
+      if (!inicial && atual > 0) {
         await supabase
           .from("profiles")
-          .update({ initial_weight_kg: newInicial })
+          .update({ initial_weight_kg: atual })
           .eq("id", userId);
       }
-      
-      // Current weight: profile weight (updated with each new weighing)
-      const atual = Number(profileData.weight_kg || inicial);
-      const meta = Number(profileData.target_weight_kg || 0);
       
       const pesoPerdido = inicial - atual;
       const totalParaPerder = inicial - meta;
       
       let mensagem = "";
       if (pesoPerdido > 0) {
-        mensagem = `Você já perdeu ${pesoPerdido.toFixed(1)}kg do seu objetivo de ${inicial}kg → ${meta}kg!`;
+        const percentAtingido = totalParaPerder > 0 ? ((pesoPerdido / totalParaPerder) * 100).toFixed(0) : 0;
+        mensagem = `Você já perdeu ${pesoPerdido.toFixed(1)}kg (${percentAtingido}% do objetivo de ${inicial}kg → ${meta}kg)`;
       } else if (pesoPerdido === 0) {
         mensagem = "Ainda não há perda registrada. Continue firme no seu objetivo!";
       } else {
@@ -155,9 +165,9 @@ const Dashboard = () => {
         ? 100 
         : Math.max(0, Math.min(100, (pesoPerdido / totalParaPerder) * 100));
       
-      if (inicial > 0) {
+      if (inicial > 0 || atual > 0) {
         setWeightProgress({
-          peso_inicial: inicial,
+          peso_inicial: inicial || atual,
           peso_atual: atual,
           peso_meta: meta,
           peso_perdido: pesoPerdido,
@@ -330,7 +340,13 @@ const Dashboard = () => {
                     percentage={weightProgress.progresso_percent}
                     size={120}
                     strokeWidth={12}
-                    activeColor="#00ff88"
+                    activeColor={
+                      weightProgress.progresso_percent >= 60 
+                        ? "#00ff88" // Verde
+                        : weightProgress.progresso_percent >= 30 
+                        ? "#ff8a00" // Laranja
+                        : "#ff4444" // Vermelho
+                    }
                     backgroundColor="rgba(255,255,255,0.08)"
                   >
                     <div className="text-center">
@@ -369,7 +385,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   )}
-                  {profile.target_weight_kg && profile.weight_kg && (
+                  {profile.target_weight_kg && weightProgress && (
                     <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
                       <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
                         <Target className="h-4 w-4 text-white" />
@@ -377,7 +393,7 @@ const Dashboard = () => {
                       <div>
                         <p className="text-xs text-muted-foreground font-medium">Meta de Peso</p>
                         <p className="font-semibold text-[14px] text-foreground">
-                          {profile.weight_kg}kg → {profile.target_weight_kg}kg
+                          {weightProgress.peso_inicial.toFixed(1)}kg → {profile.target_weight_kg}kg
                         </p>
                       </div>
                     </div>
