@@ -297,45 +297,43 @@ const Dashboard = () => {
         {/* Banner Carousel */}
         <BannerCarousel />
 
-        {/* Weight/IMC Progress Circle */}
-        {weightProgress && (
+        {/* Personalized Welcome with Weight Progress */}
+        {profile && (profile.goal || profile.target_weight_kg || weightProgress) && (
           <Card className="p-6 mb-6 bg-gradient-card shadow-card">
-            <div className="flex flex-col items-center gap-4">
-              <CircularProgress
-                percentage={weightProgress.progresso_percent}
-                size={120}
-                strokeWidth={10}
-                activeColor="#00FF7F"
-                backgroundColor="rgba(255,255,255,0.1)"
-              >
+            {/* Weight Progress Circle */}
+            {weightProgress && (
+              <div className="flex flex-col items-center gap-4 mb-6 pb-6 border-b border-border/50">
+                <CircularProgress
+                  percentage={weightProgress.progresso_percent}
+                  size={120}
+                  strokeWidth={10}
+                  activeColor="#00FF7F"
+                  backgroundColor="rgba(255,255,255,0.1)"
+                >
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-foreground">
+                      {weightProgress.peso_atual.toFixed(1)}kg
+                    </p>
+                    <p className="text-xs text-muted-foreground">Peso Atual</p>
+                  </div>
+                </CircularProgress>
+                
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">
-                    {weightProgress.peso_atual.toFixed(1)}kg
-                  </p>
-                  <p className="text-xs text-muted-foreground">Peso Atual</p>
+                  {weightProgress.peso_perdido > 0 ? (
+                    <p className="text-sm text-foreground">
+                      Você já perdeu <span className="font-bold text-primary">
+                        {weightProgress.peso_perdido.toFixed(1)}kg
+                      </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Ainda não há perda registrada. Continue firme no seu objetivo!
+                    </p>
+                  )}
                 </div>
-              </CircularProgress>
-              
-              <div className="text-center">
-                {weightProgress.peso_perdido > 0 ? (
-                  <p className="text-sm text-foreground">
-                    Você já perdeu <span className="font-bold text-primary">
-                      {weightProgress.peso_perdido.toFixed(1)}kg
-                    </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Ainda não há perda registrada. Continue firme no seu objetivo!
-                  </p>
-                )}
               </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Personalized Welcome */}
-        {profile && (profile.goal || profile.target_weight_kg) && (
-          <Card className="p-6 mb-6 bg-gradient-card shadow-card">
+            )}
+            
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
               Seu Programa Personalizado
