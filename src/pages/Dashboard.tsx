@@ -32,6 +32,7 @@ interface WeightProgress {
   peso_meta: number;
   peso_perdido: number;
   progresso_percent: number;
+  mensagem: string;
 }
 
 const Dashboard = () => {
@@ -123,34 +124,45 @@ const Dashboard = () => {
       
       // Initial weight: use initial_weight_kg (saved only once)
       // If not set, use current weight_kg and save it as initial
-      let peso_inicial = Number(profileData.initial_weight_kg || 0);
+      const inicial = Number(profileData.initial_weight_kg || 0);
       
       // If no initial weight is recorded, set it now
-      if (!peso_inicial && profileData.weight_kg) {
-        peso_inicial = Number(profileData.weight_kg);
+      if (!inicial && profileData.weight_kg) {
+        const newInicial = Number(profileData.weight_kg);
         await supabase
           .from("profiles")
-          .update({ initial_weight_kg: peso_inicial })
+          .update({ initial_weight_kg: newInicial })
           .eq("id", userId);
       }
       
       // Current weight: profile weight (updated with each new weighing)
-      const peso_atual = Number(profileData.weight_kg || peso_inicial);
-      const peso_meta = Number(profileData.target_weight_kg || 0);
+      const atual = Number(profileData.weight_kg || inicial);
+      const meta = Number(profileData.target_weight_kg || 0);
       
-      if (peso_meta > 0 && peso_inicial > 0) {
-        const peso_perdido = peso_inicial - peso_atual;
-        const total_para_perder = peso_inicial - peso_meta;
-        const progresso_percent = total_para_perder <= 0 
-          ? 100 
-          : Math.max(0, Math.min(100, (peso_perdido / total_para_perder) * 100));
-        
+      const pesoPerdido = inicial - atual;
+      const totalParaPerder = inicial - meta;
+      
+      let mensagem = "";
+      if (pesoPerdido > 0) {
+        mensagem = `Você já perdeu ${pesoPerdido.toFixed(1)}kg do seu objetivo de ${inicial}kg → ${meta}kg!`;
+      } else if (pesoPerdido === 0) {
+        mensagem = "Ainda não há perda registrada. Continue firme no seu objetivo!";
+      } else {
+        mensagem = `Você ganhou ${Math.abs(pesoPerdido).toFixed(1)}kg desde o início. Continue focado!`;
+      }
+      
+      const progresso_percent = totalParaPerder <= 0 
+        ? 100 
+        : Math.max(0, Math.min(100, (pesoPerdido / totalParaPerder) * 100));
+      
+      if (inicial > 0) {
         setWeightProgress({
-          peso_inicial,
-          peso_atual,
-          peso_meta,
-          peso_perdido,
-          progresso_percent
+          peso_inicial: inicial,
+          peso_atual: atual,
+          peso_meta: meta,
+          peso_perdido: pesoPerdido,
+          progresso_percent,
+          mensagem
         });
       }
     }
@@ -328,21 +340,9 @@ const Dashboard = () => {
                   </CircularProgress>
                   
                   <div className="text-center mt-4 px-2">
-                    {weightProgress.peso_perdido > 0 ? (
-                      <p className="text-[13px] text-foreground leading-relaxed">
-                        Você já perdeu <span className="font-bold text-primary drop-shadow-glow">
-                          {weightProgress.peso_perdido.toFixed(1)}kg
-                        </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
-                      </p>
-                    ) : weightProgress.peso_perdido === 0 ? (
-                      <p className="text-[13px] text-muted-foreground leading-relaxed">
-                        Ainda não há perda registrada. Continue firme no seu objetivo!
-                      </p>
-                    ) : (
-                      <p className="text-[13px] text-muted-foreground leading-relaxed">
-                        Você ganhou {Math.abs(weightProgress.peso_perdido).toFixed(1)}kg desde o início. Foque novamente!
-                      </p>
-                    )}
+                    <p className="text-[13px] text-foreground leading-relaxed">
+                      {weightProgress.mensagem}
+                    </p>
                   </div>
                 </div>
               )}
