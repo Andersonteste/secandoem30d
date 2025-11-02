@@ -24,6 +24,14 @@ interface Profile {
   experience_level?: string;
 }
 
+interface WeightProgress {
+  peso_inicial: number;
+  peso_atual: number;
+  peso_meta: number;
+  peso_perdido: number;
+  progresso_percent: number;
+}
+
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -31,6 +39,7 @@ const Dashboard = () => {
   const [selectedDay, setSelectedDay] = useState(1);
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [motivationalPhrase] = useState(() => motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)]);
+  const [weightProgress, setWeightProgress] = useState<WeightProgress | null>(null);
   const navigate = useNavigate();
   const {
     toast
@@ -109,6 +118,37 @@ const Dashboard = () => {
     
     if (profileData) {
       setProfile(profileData);
+      
+      // Load weight progress
+      const { data: weightLogs } = await supabase
+        .from("weight_logs")
+        .select("weight_kg")
+        .eq("user_id", userId)
+        .order("measured_at", { ascending: true })
+        .limit(1);
+      
+      const peso_inicial = weightLogs && weightLogs.length > 0 
+        ? Number(weightLogs[0].weight_kg) 
+        : Number(profileData.weight_kg || 0);
+      
+      const peso_atual = Number(profileData.weight_kg || peso_inicial);
+      const peso_meta = Number(profileData.target_weight_kg || 0);
+      
+      if (peso_meta > 0) {
+        const peso_perdido = peso_inicial - peso_atual;
+        const total_para_perder = peso_inicial - peso_meta;
+        const progresso_percent = total_para_perder <= 0 
+          ? 100 
+          : Math.max(0, Math.min(100, (peso_perdido / total_para_perder) * 100));
+        
+        setWeightProgress({
+          peso_inicial,
+          peso_atual,
+          peso_meta,
+          peso_perdido,
+          progresso_percent
+        });
+      }
     }
   };
   const toggleDayComplete = async () => {
@@ -258,19 +298,11 @@ const Dashboard = () => {
         <BannerCarousel />
 
         {/* Weight/IMC Progress Circle */}
-        {profile && profile.weight_kg && profile.target_weight_kg && (
+        {weightProgress && (
           <Card className="p-6 mb-6 bg-gradient-card shadow-card">
             <div className="flex flex-col items-center gap-4">
               <CircularProgress
-                percentage={
-                  profile.weight_kg <= profile.target_weight_kg
-                    ? 100
-                    : Math.max(
-                        0,
-                        ((profile.weight_kg - profile.target_weight_kg) / 
-                         (profile.weight_kg - profile.target_weight_kg)) * 100
-                      )
-                }
+                percentage={weightProgress.progresso_percent}
                 size={120}
                 strokeWidth={10}
                 activeColor="#00FF7F"
@@ -278,18 +310,24 @@ const Dashboard = () => {
               >
                 <div className="text-center">
                   <p className="text-2xl font-bold text-foreground">
-                    {profile.weight_kg}kg
+                    {weightProgress.peso_atual.toFixed(1)}kg
                   </p>
                   <p className="text-xs text-muted-foreground">Peso Atual</p>
                 </div>
               </CircularProgress>
               
               <div className="text-center">
-                <p className="text-sm text-foreground">
-                  Você já perdeu <span className="font-bold text-primary">
-                    {Math.max(0, profile.weight_kg - profile.target_weight_kg).toFixed(1)}kg
-                  </span> do seu objetivo de <span className="font-semibold">{profile.weight_kg}kg → {profile.target_weight_kg}kg!</span>
-                </p>
+                {weightProgress.peso_perdido > 0 ? (
+                  <p className="text-sm text-foreground">
+                    Você já perdeu <span className="font-bold text-primary">
+                      {weightProgress.peso_perdido.toFixed(1)}kg
+                    </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Ainda não há perda registrada. Continue firme no seu objetivo!
+                  </p>
+                )}
               </div>
             </div>
           </Card>
