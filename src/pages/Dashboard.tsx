@@ -120,22 +120,25 @@ const Dashboard = () => {
     if (profileData) {
       setProfile(profileData);
       
-      // Load weight progress
-      const { data: weightLogs } = await supabase
+      // Load weight progress - get first weight log for initial weight
+      const { data: firstWeightLog } = await supabase
         .from("weight_logs")
         .select("weight_kg")
         .eq("user_id", userId)
         .order("measured_at", { ascending: true })
-        .limit(1);
+        .limit(1)
+        .maybeSingle();
       
-      const peso_inicial = weightLogs && weightLogs.length > 0 
-        ? Number(weightLogs[0].weight_kg) 
+      // Initial weight: first log or profile weight
+      const peso_inicial = firstWeightLog 
+        ? Number(firstWeightLog.weight_kg) 
         : Number(profileData.weight_kg || 0);
       
+      // Current weight: profile weight (updated regularly)
       const peso_atual = Number(profileData.weight_kg || peso_inicial);
       const peso_meta = Number(profileData.target_weight_kg || 0);
       
-      if (peso_meta > 0) {
+      if (peso_meta > 0 && peso_inicial > 0) {
         const peso_perdido = peso_inicial - peso_atual;
         const total_para_perder = peso_inicial - peso_meta;
         const progresso_percent = total_para_perder <= 0 
@@ -305,7 +308,7 @@ const Dashboard = () => {
         {/* Personalized Welcome with Weight Progress */}
         {profile && (profile.goal || profile.target_weight_kg || weightProgress) && (
           <Card className="p-6 mb-6 bg-gradient-card shadow-glow border-primary/20">
-            <div className="flex flex-col md:flex-row gap-4 w-full">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
               {/* Coluna 1: Peso e Progresso */}
               {weightProgress && (
                 <div className="flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-6 flex flex-col items-center justify-center border border-primary/10 shadow-lg">
