@@ -304,39 +304,39 @@ const Dashboard = () => {
 
         {/* Personalized Welcome with Weight Progress */}
         {profile && (profile.goal || profile.target_weight_kg || weightProgress) && (
-          <Card className="p-6 mb-6 bg-gradient-card shadow-card">
+          <Card className="p-6 mb-6 bg-gradient-card shadow-glow border-primary/20">
             <div className="flex flex-col md:flex-row gap-4 w-full">
               {/* Coluna 1: Peso e Progresso */}
               {weightProgress && (
-                <div className="flex-1 bg-white/5 rounded-xl p-4 flex flex-col items-center justify-center">
+                <div className="flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-6 flex flex-col items-center justify-center border border-primary/10 shadow-lg">
                   <CircularProgress
                     percentage={weightProgress.progresso_percent}
                     size={120}
-                    strokeWidth={10}
-                    activeColor="#00FF7F"
-                    backgroundColor="rgba(255,255,255,0.1)"
+                    strokeWidth={12}
+                    activeColor="#00ff88"
+                    backgroundColor="rgba(255,255,255,0.08)"
                   >
                     <div className="text-center">
-                      <p className="text-[20px] font-bold text-foreground">
+                      <p className="text-[24px] font-bold text-foreground drop-shadow-glow">
                         {weightProgress.peso_atual.toFixed(1)}kg
                       </p>
-                      <p className="text-[13px] text-muted-foreground">Peso Atual</p>
+                      <p className="text-[12px] text-muted-foreground font-medium">Peso Atual</p>
                     </div>
                   </CircularProgress>
                   
-                  <div className="text-center mt-3">
+                  <div className="text-center mt-4 px-2">
                     {weightProgress.peso_perdido > 0 ? (
                       <p className="text-[13px] text-foreground leading-relaxed">
-                        Você já perdeu <span className="font-bold text-primary">
+                        Você já perdeu <span className="font-bold text-primary drop-shadow-glow">
                           {weightProgress.peso_perdido.toFixed(1)}kg
                         </span> do seu objetivo de <span className="font-semibold">{weightProgress.peso_inicial.toFixed(1)}kg → {weightProgress.peso_meta.toFixed(1)}kg!</span>
                       </p>
                     ) : weightProgress.peso_perdido === 0 ? (
-                      <p className="text-[13px] text-muted-foreground">
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">
                         Ainda não há perda registrada. Continue firme no seu objetivo!
                       </p>
                     ) : (
-                      <p className="text-[13px] text-muted-foreground">
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">
                         Você ganhou {Math.abs(weightProgress.peso_perdido).toFixed(1)}kg desde o início. Foque novamente!
                       </p>
                     )}
@@ -345,44 +345,46 @@ const Dashboard = () => {
               )}
               
               {/* Coluna 2: Programa Personalizado */}
-              <div className="flex-1 bg-white/5 rounded-xl p-4">
-                <h3 className="text-[16px] font-bold mb-3 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
+              <div className="flex-1 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-xl p-6 border border-primary/10 shadow-lg">
+                <h3 className="text-[17px] font-bold mb-4 flex items-center gap-2 text-foreground">
+                  <div className="bg-gradient-primary p-2 rounded-lg shadow-glow">
+                    <Target className="h-5 w-5 text-white" />
+                  </div>
                   Seu Programa Personalizado
                 </h3>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {profile.goal && (
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <TrendingUp className="h-4 w-4 text-primary" />
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
+                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
+                        <TrendingUp className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Objetivo</p>
-                        <p className="font-medium text-[13px]">{getGoalLabel(profile.goal)}</p>
+                        <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
+                        <p className="font-semibold text-[14px] text-foreground">{getGoalLabel(profile.goal)}</p>
                       </div>
                     </div>
                   )}
                   {profile.target_weight_kg && profile.weight_kg && (
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Target className="h-4 w-4 text-primary" />
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
+                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
+                        <Target className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Meta de Peso</p>
-                        <p className="font-medium text-[13px]">
+                        <p className="text-xs text-muted-foreground font-medium">Meta de Peso</p>
+                        <p className="font-semibold text-[14px] text-foreground">
                           {profile.weight_kg}kg → {profile.target_weight_kg}kg
                         </p>
                       </div>
                     </div>
                   )}
                   {profile.experience_level && (
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Activity className="h-4 w-4 text-primary" />
+                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
+                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
+                        <Activity className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Nível</p>
-                        <p className="font-medium text-[13px]">{getLevelLabel(profile.experience_level)}</p>
+                        <p className="text-xs text-muted-foreground font-medium">Nível</p>
+                        <p className="font-semibold text-[14px] text-foreground">{getLevelLabel(profile.experience_level)}</p>
                       </div>
                     </div>
                   )}
