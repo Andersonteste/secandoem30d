@@ -10,13 +10,28 @@ import { useTheme } from "next-themes";
 const bonusPDFs = [
   {
     id: "1",
-    title: "Guia de Receitas Bônus 1",
-    url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview"
+    title: "Receitas de Chás",
+    url: "/bonus/Chas.pdf"
   },
   {
     id: "2",
-    title: "Guia de Receitas Bônus 2",
-    url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview"
+    title: "Receitas de Doces",
+    url: "/bonus/Doces.pdf"
+  },
+  {
+    id: "3",
+    title: "Receitas Fit - Almoço e Jantar",
+    url: "/bonus/Receitas-Fit-Almoco-e-Jantar.pdf"
+  },
+  {
+    id: "4",
+    title: "Receitas de Salgados",
+    url: "/bonus/Salgados.pdf"
+  },
+  {
+    id: "5",
+    title: "Receitas de Sucos",
+    url: "/bonus/Sucos.pdf"
   }
 ];
 
