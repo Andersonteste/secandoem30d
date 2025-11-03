@@ -11,61 +11,36 @@ const bonusPDFs = [
   {
     id: "1",
     title: "Receitas de Chás",
-    url: "/bonus/Chas.pdf"
+    url: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview"
   },
   {
     id: "2",
     title: "Receitas de Doces",
-    url: "/bonus/Doces.pdf"
+    url: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview"
   },
   {
     id: "3",
     title: "Receitas Fit - Almoço e Jantar",
-    url: "/bonus/Receitas-Fit-Almoco-e-Jantar.pdf"
+    url: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview"
   },
   {
     id: "4",
     title: "Receitas de Salgados",
-    url: "/bonus/Salgados.pdf"
+    url: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview"
   },
   {
     id: "5",
     title: "Receitas de Sucos",
-    url: "/bonus/Sucos.pdf"
-  },
-  {
-    id: "6",
-    title: "Material Bônus 1",
-    url: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview"
-  },
-  {
-    id: "7",
-    title: "Material Bônus 2",
-    url: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview"
-  },
-  {
-    id: "8",
-    title: "Material Bônus 3",
-    url: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview"
-  },
-  {
-    id: "9",
-    title: "Material Bônus 4",
-    url: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview"
-  },
-  {
-    id: "10",
-    title: "Material Bônus 5",
     url: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/preview"
   },
   {
-    id: "11",
-    title: "Material Bônus 6",
+    id: "6",
+    title: "Marmitas Fit",
     url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview"
   },
   {
-    id: "12",
-    title: "Material Bônus 7",
+    id: "7",
+    title: "+100 Receitas Low Carb",
     url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview"
   }
 ];
