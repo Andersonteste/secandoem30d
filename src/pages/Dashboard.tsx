@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, Target, TrendingUp, Activity } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, Target, TrendingUp, Activity, Camera, RefreshCw } from "lucide-react";
 import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
@@ -16,6 +16,8 @@ import TipsTabs from "@/components/TipsTabs";
 import { HydrationCard } from "@/components/HydrationCard";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { CircularProgress } from "@/components/CircularProgress";
+import FoodPhotoAnalyzer from "@/components/FoodPhotoAnalyzer";
+import FoodSubstitutionDialog from "@/components/FoodSubstitutionDialog";
 const motivationalPhrases = ["Você está mais forte do que pensa! 💪", "Cada dia é uma nova chance de evoluir! 🌟", "Seu corpo pode fazer muito mais do que você imagina!", "A disciplina de hoje é o corpo dos seus sonhos amanhã!", "Não desista, você está fazendo incrível! 🔥", "Transformação começa com um passo de cada vez!", "Você merece a melhor versão de si mesmo! ⭐", "Persistência é a chave do sucesso! 🎯"];
 interface Profile {
   goal?: string;
@@ -43,6 +45,8 @@ const Dashboard = () => {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [motivationalPhrase] = useState(() => motivationalPhrases[Math.floor(Math.random() * motivationalPhrases.length)]);
   const [weightProgress, setWeightProgress] = useState<WeightProgress | null>(null);
+  const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
+  const [showSubstitutionDialog, setShowSubstitutionDialog] = useState(false);
   const navigate = useNavigate();
   const {
     toast
@@ -473,7 +477,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/comunidade")}>
             <Users className="h-6 w-6" />
             Comunidade
@@ -486,8 +490,19 @@ const Dashboard = () => {
             <Gift className="h-6 w-6" />
             Conteúdo Bônus
           </Button>
+          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => setShowPhotoAnalyzer(true)}>
+            <Camera className="h-6 w-6" />
+            Análise Nutricional
+          </Button>
+          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => setShowSubstitutionDialog(true)}>
+            <RefreshCw className="h-6 w-6" />
+            Substituição de Alimentos
+          </Button>
         </div>
       </div>
+
+      <FoodPhotoAnalyzer open={showPhotoAnalyzer} onOpenChange={setShowPhotoAnalyzer} />
+      <FoodSubstitutionDialog open={showSubstitutionDialog} onOpenChange={setShowSubstitutionDialog} meals={[]} />
     </div>;
 };
 export default Dashboard;
