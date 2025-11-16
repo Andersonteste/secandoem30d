@@ -335,29 +335,29 @@ const Dashboard = () => {
 
         {/* Weight Progress */}
         {weightProgress && (
-          <Card className="p-6 mb-6 shadow-glow border-primary/20" style={{ background: 'linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%)' }}>
-            <div className="flex flex-col sm:flex-row items-center gap-6">
+          <Card className="p-4 sm:p-6 mb-6 shadow-glow border-primary/20" style={{ background: 'linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%)' }}>
+            <div className="flex flex-row items-center gap-4 sm:gap-6">
               {/* Circular Progress */}
               <div className="flex-shrink-0">
                 <CircularProgress
                   percentage={weightProgress.progresso_percent}
-                  size={140}
-                  strokeWidth={14}
+                  size={window.innerWidth < 640 ? 110 : 140}
+                  strokeWidth={window.innerWidth < 640 ? 12 : 14}
                   activeColor="#ff8a00"
                   backgroundColor="rgba(255,255,255,0.1)"
                 >
                   <div className="text-center">
-                    <p className="text-[28px] font-bold text-white drop-shadow-glow">
+                    <p className="text-[22px] sm:text-[28px] font-bold text-white drop-shadow-glow">
                       {weightProgress.peso_atual.toFixed(1)}kg
                     </p>
-                    <p className="text-[13px] text-white/70 font-medium">Peso Atual</p>
+                    <p className="text-[11px] sm:text-[13px] text-white/70 font-medium">Peso Atual</p>
                   </div>
                 </CircularProgress>
               </div>
               
               {/* Progress Message */}
-              <div className="flex-1 text-center sm:text-left">
-                <p className="text-[18px] sm:text-[20px] text-white leading-relaxed font-medium">
+              <div className="flex-1 text-left">
+                <p className="text-[15px] sm:text-[20px] text-white leading-relaxed font-medium">
                   {weightProgress.mensagem}
                 </p>
               </div>
