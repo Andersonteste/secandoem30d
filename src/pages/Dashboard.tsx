@@ -333,42 +333,34 @@ const Dashboard = () => {
         {/* Banner Carousel */}
         <BannerCarousel />
 
-        {/* Personalized Welcome with Weight Progress */}
-        {profile && (profile.goal || profile.target_weight_kg || weightProgress) && (
-          <Card className="p-6 mb-6 bg-gradient-card shadow-glow border-primary/20">
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
-              {/* Coluna 1: Peso e Progresso */}
-              {weightProgress && (
-                <div className="flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-6 flex flex-col items-center justify-center border border-primary/10 shadow-lg">
-                  <CircularProgress
-                    percentage={weightProgress.progresso_percent}
-                    size={120}
-                    strokeWidth={12}
-                    activeColor={
-                      weightProgress.progresso_percent >= 60 
-                        ? "#00ff88" // Verde
-                        : weightProgress.progresso_percent >= 30 
-                        ? "#ff8a00" // Laranja
-                        : "#ff4444" // Vermelho
-                    }
-                    backgroundColor="rgba(255,255,255,0.08)"
-                  >
-                    <div className="text-center">
-                      <p className="text-[24px] font-bold text-foreground drop-shadow-glow">
-                        {weightProgress.peso_atual.toFixed(1)}kg
-                      </p>
-                      <p className="text-[12px] text-muted-foreground font-medium">Peso Atual</p>
-                    </div>
-                  </CircularProgress>
-                  
-                  <div className="text-center mt-4 px-2">
-                    <p className="text-[13px] text-foreground leading-relaxed">
-                      {weightProgress.mensagem}
+        {/* Weight Progress */}
+        {weightProgress && (
+          <Card className="p-6 mb-6 shadow-glow border-primary/20" style={{ background: 'linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%)' }}>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {/* Circular Progress */}
+              <div className="flex-shrink-0">
+                <CircularProgress
+                  percentage={weightProgress.progresso_percent}
+                  size={140}
+                  strokeWidth={14}
+                  activeColor="#ff8a00"
+                  backgroundColor="rgba(255,255,255,0.1)"
+                >
+                  <div className="text-center">
+                    <p className="text-[28px] font-bold text-white drop-shadow-glow">
+                      {weightProgress.peso_atual.toFixed(1)}kg
                     </p>
+                    <p className="text-[13px] text-white/70 font-medium">Peso Atual</p>
                   </div>
-                </div>
-              )}
+                </CircularProgress>
+              </div>
               
+              {/* Progress Message */}
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-[18px] sm:text-[20px] text-white leading-relaxed font-medium">
+                  {weightProgress.mensagem}
+                </p>
+              </div>
             </div>
           </Card>
         )}
