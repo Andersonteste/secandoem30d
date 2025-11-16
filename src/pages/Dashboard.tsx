@@ -369,52 +369,6 @@ const Dashboard = () => {
                 </div>
               )}
               
-              {/* Coluna 2: Programa Personalizado */}
-              <div className="flex-1 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 rounded-xl p-6 border border-primary/10 shadow-lg">
-                <h3 className="text-[17px] font-bold mb-4 flex items-center gap-2 text-foreground">
-                  <div className="bg-gradient-primary p-2 rounded-lg shadow-glow">
-                    <Target className="h-5 w-5 text-white" />
-                  </div>
-                  Seu Programa Personalizado
-                </h3>
-                <div className="flex flex-col gap-4">
-                  {profile.goal && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
-                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
-                        <TrendingUp className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Objetivo</p>
-                        <p className="font-semibold text-[14px] text-foreground">{getGoalLabel(profile.goal)}</p>
-                      </div>
-                    </div>
-                  )}
-                  {profile.target_weight_kg && weightProgress && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
-                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
-                        <Target className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Meta de Peso</p>
-                        <p className="font-semibold text-[14px] text-foreground">
-                          {weightProgress.peso_inicial.toFixed(1)}kg → {profile.target_weight_kg}kg
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {profile.experience_level && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-all">
-                      <div className="bg-gradient-primary p-2.5 rounded-full shadow-md">
-                        <Activity className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Nível</p>
-                        <p className="font-semibold text-[14px] text-foreground">{getLevelLabel(profile.experience_level)}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </Card>
         )}
