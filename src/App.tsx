@@ -15,6 +15,8 @@ import Diario from "./pages/Diario";
 import Profile from "./pages/Profile";
 import Community from "./pages/Community";
 import ReceitasIA from "./pages/ReceitasIA";
+import Loja from "./pages/Loja";
+import AdminProdutos from "./pages/AdminProdutos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/comunidade" element={<Community />} />
             <Route path="/receitas-ia" element={<ReceitasIA />} />
+            <Route path="/loja" element={<Loja />} />
+            <Route path="/admin/produtos" element={<AdminProdutos />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
