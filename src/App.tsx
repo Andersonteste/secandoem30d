@@ -14,6 +14,7 @@ import Treinos from "./pages/Treinos";
 import Diario from "./pages/Diario";
 import Profile from "./pages/Profile";
 import Community from "./pages/Community";
+import ReceitasIA from "./pages/ReceitasIA";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/diario" element={<Diario />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/comunidade" element={<Community />} />
+            <Route path="/receitas-ia" element={<ReceitasIA />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -387,6 +387,28 @@ const Dashboard = () => {
           <WorkoutCard dayNum={selectedDay} />
         </div>
 
+        {/* AI Recipe Chat - Featured */}
+        <Card className="p-6 mb-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => navigate("/receitas-ia")}>
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                Chat de Receitas com IA
+                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-normal">NOVO</span>
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Digite os ingredientes que você tem em casa e receba receitas fitness personalizadas criadas por IA especialmente para você!
+              </p>
+              <Button className="bg-gradient-primary hover:opacity-90">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Criar Receitas Agora
+              </Button>
+            </div>
+          </div>
+        </Card>
+
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/comunidade")}>

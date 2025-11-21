@@ -315,6 +315,33 @@ export type Database = {
         }
         Relationships: []
       }
+      receitas_geradas_ia: {
+        Row: {
+          created_at: string
+          favorita: boolean | null
+          id: string
+          ingredientes_input: string
+          receitas_geradas: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorita?: boolean | null
+          id?: string
+          ingredientes_input: string
+          receitas_geradas: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorita?: boolean | null
+          id?: string
+          ingredientes_input?: string
+          receitas_geradas?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           category: string | null
