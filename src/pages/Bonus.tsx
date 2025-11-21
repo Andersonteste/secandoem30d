@@ -100,7 +100,7 @@ const Bonus = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {bonusPDFs.map((pdf) => (
             <Card
               key={pdf.id}
@@ -111,12 +111,12 @@ const Bonus = () => {
                 <img 
                   src={pdf.image} 
                   alt={pdf.title}
-                  className="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-[168px] object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-base">{pdf.title}</h3>
+              <div className="p-3">
+                <h3 className="font-semibold text-sm">{pdf.title}</h3>
                 <p className="text-xs text-muted-foreground mt-1">Clique para visualizar</p>
               </div>
             </Card>
