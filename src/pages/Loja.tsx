@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { ExternalLink, ShoppingBag, Star, Filter } from "lucide-react";
+import { ExternalLink, ShoppingBag, Star, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 interface Product {
   id: string;
@@ -25,6 +26,7 @@ const Loja = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("todos");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const { toast } = useToast();
 
   const categories = [
@@ -77,9 +79,13 @@ const Loja = () => {
     window.open(product.link_afiliado, '_blank');
   };
 
-  const filteredProducts = selectedCategory === "todos"
-    ? products
-    : products.filter(p => p.categoria === selectedCategory);
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === "todos" || product.categoria === selectedCategory;
+    const matchesSearch = searchQuery === "" || 
+      product.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.descricao?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const featuredProducts = products.filter(p => p.destaque);
 
@@ -151,8 +157,17 @@ const Loja = () => {
           </div>
         )}
 
-        {/* Category Filter */}
-        <div className="mb-6">
+        {/* Search and Category Filter */}
+        <div className="mb-6 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar produtos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
             <TabsList className="inline-flex h-auto flex-wrap justify-start gap-1 w-full">
               {categories.map(cat => (
