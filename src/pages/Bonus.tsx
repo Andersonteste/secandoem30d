@@ -13,6 +13,7 @@ import bonusSalgados from "@/assets/bonus-salgados.webp";
 import bonusSucos from "@/assets/bonus-sucos.webp";
 import bonusMarmitas from "@/assets/bonus-marmitas.png";
 import bonusLowCarb from "@/assets/bonus-low-carb.png";
+import bonusListaCompras from "@/assets/bonus-lista-compras.png";
 
 const bonusPDFs = [
   {
@@ -56,6 +57,12 @@ const bonusPDFs = [
     title: "+100 Receitas Low Carb",
     url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview",
     image: bonusLowCarb
+  },
+  {
+    id: "8",
+    title: "Lista de Compras Fit",
+    url: "https://drive.google.com/file/d/1Qipf9oV5PR9weSroVobwhGCzgd1mQHD0/preview",
+    image: bonusListaCompras
   }
 ];
 
