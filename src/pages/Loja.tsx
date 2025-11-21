@@ -97,13 +97,6 @@ const Loja = () => {
           <p className="text-muted-foreground">
             Produtos recomendados para sua jornada fitness
           </p>
-          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              💡 <strong>Transparência:</strong> Os links abaixo são links de afiliados. 
-              Quando você compra através deles, recebemos uma pequena comissão sem nenhum custo adicional para você.
-              Isso nos ajuda a manter o app gratuito!
-            </p>
-          </div>
         </div>
 
         {/* Featured Products */}
@@ -161,9 +154,9 @@ const Loja = () => {
         {/* Category Filter */}
         <div className="mb-6">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="inline-flex h-auto flex-wrap justify-start gap-1 w-full">
               {categories.map(cat => (
-                <TabsTrigger key={cat.value} value={cat.value}>
+                <TabsTrigger key={cat.value} value={cat.value} className="flex-shrink-0">
                   {cat.label}
                 </TabsTrigger>
               ))}
