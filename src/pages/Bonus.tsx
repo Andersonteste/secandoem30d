@@ -3,45 +3,59 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FileText, Moon, Sun, Gift } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Gift } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { useTheme } from "next-themes";
+import bonusChas from "@/assets/bonus-chas.webp";
+import bonusDoces from "@/assets/bonus-doces.webp";
+import bonusReceitasFit from "@/assets/bonus-receitas-fit.webp";
+import bonusSalgados from "@/assets/bonus-salgados.webp";
+import bonusSucos from "@/assets/bonus-sucos.webp";
+import bonusMarmitas from "@/assets/bonus-marmitas.png";
+import bonusLowCarb from "@/assets/bonus-low-carb.png";
 
 const bonusPDFs = [
   {
     id: "1",
     title: "Receitas de Chás",
-    url: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview"
+    url: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview",
+    image: bonusChas
   },
   {
     id: "2",
     title: "Receitas de Doces",
-    url: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview"
+    url: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview",
+    image: bonusDoces
   },
   {
     id: "3",
     title: "Receitas Fit - Almoço e Jantar",
-    url: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview"
+    url: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview",
+    image: bonusReceitasFit
   },
   {
     id: "4",
     title: "Receitas de Salgados",
-    url: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview"
+    url: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview",
+    image: bonusSalgados
   },
   {
     id: "5",
     title: "Receitas de Sucos",
-    url: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/preview"
+    url: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/preview",
+    image: bonusSucos
   },
   {
     id: "6",
     title: "Marmitas Fit",
-    url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview"
+    url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview",
+    image: bonusMarmitas
   },
   {
     id: "7",
     title: "+100 Receitas Low Carb",
-    url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview"
+    url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview",
+    image: bonusLowCarb
   }
 ];
 
@@ -86,21 +100,24 @@ const Bonus = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bonusPDFs.map((pdf) => (
             <Card
               key={pdf.id}
-              className="p-6 hover:shadow-glow transition-all cursor-pointer"
+              className="overflow-hidden hover:shadow-glow transition-all cursor-pointer group"
               onClick={() => setSelectedPDF(pdf)}
             >
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-primary p-4 rounded-lg">
-                  <FileText className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{pdf.title}</h3>
-                  <p className="text-sm text-muted-foreground">Clique para visualizar</p>
-                </div>
+              <div className="relative">
+                <img 
+                  src={pdf.image} 
+                  alt={pdf.title}
+                  className="w-full h-[280px] object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="p-4">
+                <h3 className="font-semibold text-base">{pdf.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1">Clique para visualizar</p>
               </div>
             </Card>
           ))}
