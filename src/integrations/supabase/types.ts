@@ -101,6 +101,41 @@ export type Database = {
         }
         Relationships: []
       }
+      clicks_afiliados: {
+        Row: {
+          clicked_at: string | null
+          id: string
+          produto_id: string
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          id?: string
+          produto_id: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          id?: string
+          produto_id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicks_afiliados_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos_loja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_settings: {
         Row: {
           id: string
@@ -264,6 +299,51 @@ export type Database = {
         }
         Relationships: []
       }
+      produtos_loja: {
+        Row: {
+          ativo: boolean | null
+          categoria: string
+          created_at: string | null
+          descricao: string | null
+          destaque: boolean | null
+          id: string
+          imagem_url: string | null
+          link_afiliado: string
+          nome: string
+          ordem: number | null
+          preco_exibicao: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria: string
+          created_at?: string | null
+          descricao?: string | null
+          destaque?: boolean | null
+          id?: string
+          imagem_url?: string | null
+          link_afiliado: string
+          nome: string
+          ordem?: number | null
+          preco_exibicao?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string
+          created_at?: string | null
+          descricao?: string | null
+          destaque?: boolean | null
+          id?: string
+          imagem_url?: string | null
+          link_afiliado?: string
+          nome?: string
+          ordem?: number | null
+          preco_exibicao?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -375,6 +455,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       weight_logs: {
         Row: {
           created_at: string
@@ -448,10 +549,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -578,6 +685,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

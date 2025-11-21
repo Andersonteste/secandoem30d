@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, Target, TrendingUp, Activity, Camera, RefreshCw } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, Target, TrendingUp, Activity, Camera, RefreshCw, ShoppingBag } from "lucide-react";
 import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
@@ -410,7 +410,11 @@ const Dashboard = () => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/loja")}>
+            <ShoppingBag className="h-6 w-6" />
+            Loja
+          </Button>
           <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/comunidade")}>
             <Users className="h-6 w-6" />
             Comunidade
