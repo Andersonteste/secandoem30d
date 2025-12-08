@@ -348,6 +348,7 @@ export type Database = {
         Row: {
           age: number | null
           available_days: number | null
+          avatar_url: string | null
           created_at: string | null
           dietary_restrictions: string[] | null
           display_name: string | null
@@ -365,6 +366,7 @@ export type Database = {
         Insert: {
           age?: number | null
           available_days?: number | null
+          avatar_url?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
           display_name?: string | null
@@ -382,6 +384,7 @@ export type Database = {
         Update: {
           age?: number | null
           available_days?: number | null
+          avatar_url?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
           display_name?: string | null

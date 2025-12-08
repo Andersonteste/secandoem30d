@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, 
   Calendar, Target, LogOut, Trophy, Flame, Moon, Dumbbell, Apple,
-  Medal, Star, Zap, Award, Crown, Edit2
+  Medal, Star, Zap, Award, Crown, Edit2, Camera, Loader2
 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { format, differenceInDays, addDays, parseISO, subDays, isSameDay } from "date-fns";
@@ -34,6 +34,7 @@ interface Profile {
   available_days: number | null;
   dietary_restrictions: string[] | null;
   initial_weight_kg?: number | null;
+  avatar_url?: string | null;
 }
 
 interface WeightLog {
@@ -70,15 +71,18 @@ const Profile = () => {
     experience_level: null,
     available_days: null,
     dietary_restrictions: null,
+    avatar_url: null,
   });
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [newWeight, setNewWeight] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [completedDays, setCompletedDays] = useState(0);
   const [editGoalOpen, setEditGoalOpen] = useState(false);
   const [tempGoal, setTempGoal] = useState({ goal: "", target_weight_kg: "" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -175,6 +179,7 @@ const Profile = () => {
         available_days: profileRes.data.available_days,
         dietary_restrictions: profileRes.data.dietary_restrictions,
         initial_weight_kg: profileRes.data.initial_weight_kg,
+        avatar_url: profileRes.data.avatar_url,
       });
       setTempGoal({ 
         goal: profileRes.data.goal || "", 
@@ -284,6 +289,56 @@ const Profile = () => {
     navigate("/auth");
   };
 
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: "destructive", title: "Erro", description: "Selecione uma imagem válida" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ variant: "destructive", title: "Erro", description: "A imagem deve ter no máximo 2MB" });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast({ title: "Foto atualizada!", description: "Sua foto de perfil foi salva" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao enviar foto" });
+      console.error(error);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const getWeightProgress = () => {
     if (!profile.initial_weight_kg || weightLogs.length === 0) return null;
     const diff = profile.initial_weight_kg - weightLogs[0].weight_kg;
@@ -342,8 +397,38 @@ const Profile = () => {
             </Button>
           </div>
           <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-4 rounded-full">
-              <UserIcon className="h-8 w-8" />
+            {/* Avatar with upload */}
+            <div className="relative group">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={uploadAvatar}
+                accept="image/*"
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="relative w-20 h-20 rounded-full overflow-hidden bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-all cursor-pointer"
+              >
+                {profile.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="h-10 w-10" />
+                )}
+                {/* Overlay on hover */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploadingAvatar ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <Camera className="h-6 w-6" />
+                  )}
+                </div>
+              </button>
             </div>
             <div>
               <h1 className="text-2xl font-bold">{profile.display_name || "Seu Perfil"}</h1>
