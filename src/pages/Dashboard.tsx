@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, User as UserIcon, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, Target, TrendingUp, Activity, Camera, RefreshCw, ShoppingBag } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, TrendingUp, Camera, RefreshCw, ShoppingBag, Utensils, ChefHat } from "lucide-react";
 import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
@@ -330,14 +330,6 @@ const Dashboard = () => {
             </div>
           </Card>}
 
-        {/* Motivational Phrase */}
-        <Card className="p-4 mb-6 bg-gradient-primary text-primary-foreground shadow-glow">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 animate-pulse-glow" />
-            <p className="text-base font-medium">{motivationalPhrase}</p>
-          </div>
-        </Card>
-
         {/* Progress Overview */}
         <Card className="p-6 mb-8 bg-gradient-card shadow-card">
           <div className="flex items-center justify-between mb-4">
@@ -387,55 +379,100 @@ const Dashboard = () => {
           <WorkoutCard dayNum={selectedDay} />
         </div>
 
-        {/* AI Recipe Chat - Featured */}
-        <Card className="p-6 mb-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => navigate("/receitas-ia")}>
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                Chat de Receitas com IA
-                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-normal">NOVO</span>
-              </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Digite os ingredientes que você tem em casa e receba receitas fitness personalizadas criadas por IA especialmente para você!
-              </p>
-              <Button className="bg-gradient-primary hover:opacity-90">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Criar Receitas Agora
-              </Button>
-            </div>
+        {/* Quick Actions - Premium Section */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Ferramentas Exclusivas
+          </h2>
+          
+          {/* AI Tools - Featured */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card 
+              className="group p-5 cursor-pointer border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background hover:shadow-glow hover:border-primary/40 transition-all duration-300"
+              onClick={() => navigate("/receitas-ia")}
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-gradient-primary text-white shadow-glow group-hover:scale-110 transition-transform">
+                  <ChefHat className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1 flex items-center gap-2">
+                    Receitas com IA
+                    <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">NOVO</span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Receitas personalizadas com seus ingredientes</p>
+                </div>
+              </div>
+            </Card>
+            
+            <Card 
+              className="group p-5 cursor-pointer border-secondary/20 bg-gradient-to-br from-secondary/10 via-background to-background hover:shadow-lg hover:border-secondary/40 transition-all duration-300"
+              onClick={() => setShowPhotoAnalyzer(true)}
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-secondary text-secondary-foreground shadow-lg group-hover:scale-110 transition-transform">
+                  <Camera className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Análise Nutricional</h3>
+                  <p className="text-xs text-muted-foreground">Escaneie seu prato e saiba os nutrientes</p>
+                </div>
+              </div>
+            </Card>
+            
+            <Card 
+              className="group p-5 cursor-pointer border-border hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+              onClick={() => setShowSubstitutionDialog(true)}
+            >
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors">
+                  <RefreshCw className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Substituir Alimentos</h3>
+                  <p className="text-xs text-muted-foreground">Encontre alternativas saudáveis</p>
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/loja")}>
-            <ShoppingBag className="h-6 w-6" />
-            Loja
-          </Button>
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/comunidade")}>
-            <Users className="h-6 w-6" />
-            Comunidade
-          </Button>
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/diario")}>
-            <BookOpen className="h-6 w-6" />
-            Diário Alimentar
-          </Button>
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => navigate("/bonus")}>
-            <Gift className="h-6 w-6" />
-            Conteúdo Bônus
-          </Button>
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => setShowPhotoAnalyzer(true)}>
-            <Camera className="h-6 w-6" />
-            Análise Nutricional
-          </Button>
-          <Button variant="outline" className="h-20 flex-col gap-2 hover:shadow-glow transition-all" onClick={() => setShowSubstitutionDialog(true)}>
-            <RefreshCw className="h-6 w-6" />
-            Substituição de Alimentos
-          </Button>
-        </div>
+          {/* Secondary Actions */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-1.5 hover:bg-primary/5 hover:border-primary/30 transition-all" 
+              onClick={() => navigate("/bonus")}
+            >
+              <Gift className="h-5 w-5 text-primary" />
+              <span className="text-xs">Bônus</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-1.5 hover:bg-secondary/5 hover:border-secondary/30 transition-all" 
+              onClick={() => navigate("/comunidade")}
+            >
+              <Users className="h-5 w-5 text-secondary" />
+              <span className="text-xs">Comunidade</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-1.5 hover:bg-primary/5 hover:border-primary/30 transition-all" 
+              onClick={() => navigate("/diario")}
+            >
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="text-xs">Diário</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-1.5 hover:bg-secondary/5 hover:border-secondary/30 transition-all" 
+              onClick={() => navigate("/loja")}
+            >
+              <ShoppingBag className="h-5 w-5 text-secondary" />
+              <span className="text-xs">Loja</span>
+            </Button>
+          </div>
+        </section>
       </div>
 
       <FoodPhotoAnalyzer open={showPhotoAnalyzer} onOpenChange={setShowPhotoAnalyzer} />
