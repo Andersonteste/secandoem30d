@@ -28,7 +28,7 @@ export const Navigation = () => {
     path: "/profile"
   }];
   
-  return <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50 md:top-0 md:bottom-auto">
+  return <nav data-tour="navigation" className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50 md:top-0 md:bottom-auto">
       <div className="container mx-auto px-4">
         <div className="flex justify-around md:justify-center md:gap-8 py-3">
           {navItems.map(item => <NavLink key={item.path} to={item.path} className={({

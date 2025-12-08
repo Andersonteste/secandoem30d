@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Dumbbell, BookOpen, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, TrendingUp, Camera, RefreshCw, ShoppingBag, Utensils, ChefHat } from "lucide-react";
+import { LogOut, Dumbbell, BookOpen, CheckCircle2, Circle, Sparkles, Users, Moon, Sun, Gift, TrendingUp, Camera, RefreshCw, ShoppingBag, ChefHat } from "lucide-react";
 import { useTheme } from "next-themes";
 import DaySelector from "@/components/DaySelector";
 import WorkoutCard from "@/components/WorkoutCard";
@@ -18,6 +18,7 @@ import { BannerCarousel } from "@/components/BannerCarousel";
 import { CircularProgress } from "@/components/CircularProgress";
 import FoodPhotoAnalyzer from "@/components/FoodPhotoAnalyzer";
 import FoodSubstitutionDialog from "@/components/FoodSubstitutionDialog";
+import AppTour from "@/components/AppTour";
 const motivationalPhrases = ["Você está mais forte do que pensa! 💪", "Cada dia é uma nova chance de evoluir! 🌟", "Seu corpo pode fazer muito mais do que você imagina!", "A disciplina de hoje é o corpo dos seus sonhos amanhã!", "Não desista, você está fazendo incrível! 🔥", "Transformação começa com um passo de cada vez!", "Você merece a melhor versão de si mesmo! ⭐", "Persistência é a chave do sucesso! 🎯"];
 interface Profile {
   goal?: string;
@@ -26,6 +27,7 @@ interface Profile {
   experience_level?: string;
   display_name?: string;
   initial_weight_kg?: number;
+  tour_completed?: boolean;
 }
 interface WeightProgress {
   peso_inicial: number;
@@ -45,6 +47,7 @@ const Dashboard = () => {
   const [weightProgress, setWeightProgress] = useState<WeightProgress | null>(null);
   const [showPhotoAnalyzer, setShowPhotoAnalyzer] = useState(false);
   const [showSubstitutionDialog, setShowSubstitutionDialog] = useState(false);
+  const [runTour, setRunTour] = useState(false);
   const navigate = useNavigate();
   const {
     toast
@@ -108,10 +111,10 @@ const Dashboard = () => {
       setCompletedDays(data.map(d => d.day_num));
     }
 
-    // Load profile data
+    // Load profile data including tour_completed
     const {
       data: profileData
-    } = await supabase.from("profiles").select("goal, target_weight_kg, weight_kg, experience_level, display_name, initial_weight_kg").eq("id", userId).single();
+    } = await (supabase as any).from("profiles").select("goal, target_weight_kg, weight_kg, experience_level, display_name, initial_weight_kg, tour_completed").eq("id", userId).single();
 
     // Load weight logs to get current weight from latest log
     const {
@@ -121,6 +124,11 @@ const Dashboard = () => {
     }).limit(1);
     if (profileData) {
       setProfile(profileData);
+      
+      // Start tour if not completed
+      if (!profileData.tour_completed) {
+        setTimeout(() => setRunTour(true), 1000);
+      }
 
       // Initial weight: use initial_weight_kg (saved only once)
       const inicial = Number(profileData.initial_weight_kg || 0);
@@ -157,6 +165,17 @@ const Dashboard = () => {
           mensagem
         });
       }
+    }
+  };
+  
+  const handleTourComplete = async () => {
+    setRunTour(false);
+    if (user) {
+      await supabase.from("profiles").update({ tour_completed: true }).eq("id", user.id);
+      toast({
+        title: "Tour concluído! 🎉",
+        description: "Agora você conhece todas as funcionalidades. Bom desafio!"
+      });
     }
   };
   const toggleDayComplete = async () => {
@@ -259,8 +278,11 @@ const Dashboard = () => {
   };
   return <div className="min-h-screen bg-background pb-20 md:pt-20">
       <Navigation />
+      {/* App Tour */}
+      <AppTour run={runTour} onComplete={handleTourComplete} />
+      
       {/* Header */}
-      <header className="text-white px-4 shadow-glow relative" style={{
+      <header data-tour="header" className="text-white px-4 shadow-glow relative" style={{
       paddingTop: 'max(env(safe-area-inset-top, 0px), 24px)',
       paddingBottom: '10px',
       minHeight: '120px',
@@ -305,7 +327,7 @@ const Dashboard = () => {
         <BannerCarousel />
 
         {/* Weight Progress */}
-        {weightProgress && <Card className="p-4 sm:p-6 mb-6 shadow-glow border-primary/20" style={{
+        {weightProgress && <Card data-tour="weight-progress" className="p-4 sm:p-6 mb-6 shadow-glow border-primary/20" style={{
         background: 'linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%)'
       }}>
             <div className="flex flex-row items-center gap-4 sm:gap-6">
@@ -331,7 +353,7 @@ const Dashboard = () => {
           </Card>}
 
         {/* Progress Overview */}
-        <Card className="p-6 mb-8 bg-gradient-card shadow-card">
+        <Card data-tour="challenge-progress" className="p-6 mb-8 bg-gradient-card shadow-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Seu Progresso</h2>
             <div className="flex items-center gap-3">
@@ -350,18 +372,22 @@ const Dashboard = () => {
         </Card>
 
         {/* Tips and Guidelines */}
-        <TipsTabs />
+        <div data-tour="tips">
+          <TipsTabs />
+        </div>
 
         {/* Daily Progress Card */}
-        <div className="mb-8">
+        <div data-tour="hydration" className="mb-8">
           <HydrationCard />
         </div>
 
         {/* Day Selector */}
-        <DaySelector selectedDay={selectedDay} completedDays={completedDays} onDaySelect={setSelectedDay} />
+        <div data-tour="day-selector">
+          <DaySelector selectedDay={selectedDay} completedDays={completedDays} onDaySelect={setSelectedDay} />
+        </div>
 
         {/* Day Content */}
-        <div className="mb-6 flex items-center justify-between">
+        <div data-tour="daily-content" className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Dia {selectedDay}</h2>
           <Button onClick={toggleDayComplete} variant={isDayCompleted ? "outline" : "default"} className={isDayCompleted ? "" : "bg-gradient-primary hover:opacity-90 shadow-glow"}>
             {isDayCompleted ? <>
@@ -387,7 +413,7 @@ const Dashboard = () => {
           </h2>
           
           {/* AI Tools - Featured */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div data-tour="ai-tools" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card 
               className="group p-5 cursor-pointer border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background hover:shadow-glow hover:border-primary/40 transition-all duration-300"
               onClick={() => navigate("/receitas-ia")}
@@ -438,7 +464,7 @@ const Dashboard = () => {
           </div>
 
           {/* Secondary Actions */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div data-tour="quick-actions" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Button 
               variant="outline" 
               className="h-16 flex-col gap-1.5 hover:bg-primary/5 hover:border-primary/30 transition-all" 
