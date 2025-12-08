@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, Calendar, Save, Dumbbell, Apple } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, BookOpen, Save, Dumbbell, Apple, Flame, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday, parseISO, differenceInDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Navigation } from "@/components/Navigation";
+import { cn } from "@/lib/utils";
 
 interface DiaryEntry {
   id: string;
@@ -23,13 +26,67 @@ const Diario = () => {
   const [user, setUser] = useState<User | null>(null);
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [currentNote, setCurrentNote] = useState("");
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [completedWorkout, setCompletedWorkout] = useState(false);
   const [completedMeal, setCompletedMeal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Calculate streak
+  const streak = useMemo(() => {
+    if (entries.length === 0) return 0;
+    
+    const sortedDates = entries
+      .map(e => parseISO(e.entry_date))
+      .sort((a, b) => b.getTime() - a.getTime());
+    
+    let currentStreak = 0;
+    let checkDate = new Date();
+    
+    // Check if today has entry, if not start from yesterday
+    const todayEntry = entries.find(e => e.entry_date === format(checkDate, "yyyy-MM-dd"));
+    if (!todayEntry) {
+      checkDate = subDays(checkDate, 1);
+    }
+    
+    for (const date of sortedDates) {
+      if (isSameDay(date, checkDate) || differenceInDays(checkDate, date) === 0) {
+        currentStreak++;
+        checkDate = subDays(checkDate, 1);
+      } else if (differenceInDays(checkDate, date) === 1) {
+        currentStreak++;
+        checkDate = date;
+      } else {
+        break;
+      }
+    }
+    
+    return currentStreak;
+  }, [entries]);
+
+  // Get entries for calendar display
+  const entryDates = useMemo(() => {
+    return new Set(entries.map(e => e.entry_date));
+  }, [entries]);
+
+  // Stats for current month
+  const monthStats = useMemo(() => {
+    const monthStart = startOfMonth(calendarMonth);
+    const monthEnd = endOfMonth(calendarMonth);
+    const monthEntries = entries.filter(e => {
+      const date = parseISO(e.entry_date);
+      return date >= monthStart && date <= monthEnd;
+    });
+    
+    const workoutDays = monthEntries.filter(e => (e.photos as any)?.completedWorkout).length;
+    const mealDays = monthEntries.filter(e => (e.photos as any)?.completedMeal).length;
+    
+    return { total: monthEntries.length, workoutDays, mealDays };
+  }, [entries, calendarMonth]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -42,8 +99,26 @@ const Diario = () => {
     });
   }, [navigate]);
 
+  // Load entry for selected date
+  useEffect(() => {
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const entry = entries.find(e => e.entry_date === dateStr);
+    
+    if (entry) {
+      setCurrentNote(entry.notes || "");
+      const photos = (entry.photos as any) || {};
+      setCompletedWorkout(photos.completedWorkout || false);
+      setCompletedMeal(photos.completedMeal || false);
+    } else {
+      setCurrentNote("");
+      setCompletedWorkout(false);
+      setCompletedMeal(false);
+    }
+  }, [selectedDate, entries]);
+
   const loadEntries = async (userId: string) => {
-    const { data } = await (supabase as any)
+    setLoading(true);
+    const { data } = await supabase
       .from("food_diary")
       .select("*")
       .eq("user_id", userId)
@@ -51,22 +126,16 @@ const Diario = () => {
 
     if (data) {
       setEntries(data);
-      const todayEntry = data.find(e => e.entry_date === selectedDate);
-      
-      if (todayEntry) {
-        setCurrentNote(todayEntry.notes || "");
-        const photos = (todayEntry.photos as any) || {};
-        setCompletedWorkout(photos.completedWorkout || false);
-        setCompletedMeal(photos.completedMeal || false);
-      }
     }
+    setLoading(false);
   };
 
   const saveEntry = async () => {
     if (!user) return;
     
-    setLoading(true);
-    const existingEntry = entries.find(e => e.entry_date === selectedDate);
+    setSaving(true);
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const existingEntry = entries.find(e => e.entry_date === dateStr);
 
     const entryData = {
       notes: currentNote,
@@ -77,196 +146,298 @@ const Diario = () => {
     };
 
     if (existingEntry) {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("food_diary")
         .update(entryData)
         .eq("id", existingEntry.id);
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Falha ao atualizar entrada",
-        });
+        toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar entrada" });
       } else {
-        toast({
-          title: "Salvo!",
-          description: "Sua entrada no diário foi atualizada",
-        });
+        toast({ title: "Salvo!", description: "Entrada atualizada com sucesso" });
         loadEntries(user.id);
       }
     } else {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("food_diary")
-        .insert({
-          user_id: user.id,
-          entry_date: selectedDate,
-          ...entryData
-        });
+        .insert({ user_id: user.id, entry_date: dateStr, ...entryData });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: "Falha ao criar entrada",
-        });
+        toast({ variant: "destructive", title: "Erro", description: "Falha ao criar entrada" });
       } else {
-        toast({
-          title: "Salvo!",
-          description: "Sua entrada no diário foi criada",
-        });
+        toast({ title: "Salvo!", description: "Nova entrada criada com sucesso" });
         loadEntries(user.id);
       }
     }
-    setLoading(false);
+    setSaving(false);
   };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  const hasEntryToday = entryDates.has(selectedDateStr);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pt-20">
       <Navigation />
+      
+      {/* Header */}
       <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
             className="mb-4 text-primary-foreground hover:bg-white/20"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Dashboard
+            Voltar
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <BookOpen className="h-6 w-6" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-3 rounded-full">
+                <BookOpen className="h-7 w-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Diário Alimentar</h1>
+                <p className="text-sm opacity-90">Acompanhe seu progresso diário</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">Diário Alimentar</h1>
-              <p className="text-sm opacity-90">Acompanhe suas refeições e progresso diário</p>
-            </div>
+            {/* Streak Badge */}
+            {streak > 0 && (
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2">
+                <Flame className="h-5 w-5 text-orange-300" />
+                <span className="font-bold text-lg">{streak}</span>
+                <span className="text-sm opacity-90">dias</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <Card className="p-6 mb-6 bg-gradient-card shadow-card">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-primary" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                const entry = entries.find(ent => ent.entry_date === e.target.value);
-                setCurrentNote(entry?.notes || "");
-                const photos = (entry?.photos as any) || {};
-                setCompletedWorkout(photos.completedWorkout || false);
-                setCompletedMeal(photos.completedMeal || false);
-              }}
-              className="text-sm font-medium bg-transparent border-none outline-none cursor-pointer"
-            />
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-[300px] w-full rounded-xl" />
+            <Skeleton className="h-[200px] w-full rounded-xl" />
           </div>
+        ) : (
+          <div className="grid md:grid-cols-[1fr,380px] gap-6">
+            {/* Entry Form */}
+            <div className="space-y-4 order-2 md:order-1">
+              {/* Selected Date Card */}
+              <Card className="p-5 bg-gradient-card">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">
+                      {isToday(selectedDate) 
+                        ? "Hoje" 
+                        : format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
+                    </span>
+                  </div>
+                  {hasEntryToday && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      Preenchido
+                    </span>
+                  )}
+                </div>
 
-          <div className="space-y-4 mb-4">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
-              <Checkbox 
-                id="workout"
-                checked={completedWorkout}
-                onCheckedChange={(checked) => setCompletedWorkout(checked as boolean)}
-              />
-              <label
-                htmlFor="workout"
-                className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1"
-              >
-                <Dumbbell className="h-4 w-4 text-primary" />
-                Completei o treino do dia
-              </label>
-            </div>
+                {/* Checkboxes */}
+                <div className="space-y-3 mb-5">
+                  <label
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all",
+                      completedWorkout 
+                        ? "bg-primary/15 border border-primary/30" 
+                        : "bg-muted/50 border border-transparent hover:bg-muted"
+                    )}
+                  >
+                    <Checkbox 
+                      id="workout"
+                      checked={completedWorkout}
+                      onCheckedChange={(checked) => setCompletedWorkout(checked as boolean)}
+                    />
+                    <Dumbbell className={cn("h-5 w-5", completedWorkout ? "text-primary" : "text-muted-foreground")} />
+                    <span className="font-medium flex-1">Completei o treino</span>
+                    {completedWorkout && <span className="text-xl">💪</span>}
+                  </label>
 
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
-              <Checkbox 
-                id="meal"
-                checked={completedMeal}
-                onCheckedChange={(checked) => setCompletedMeal(checked as boolean)}
-              />
-              <label
-                htmlFor="meal"
-                className="flex items-center gap-2 text-sm font-medium cursor-pointer flex-1"
-              >
-                <Apple className="h-4 w-4 text-secondary" />
-                Segui o plano alimentar
-              </label>
-            </div>
-          </div>
+                  <label
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all",
+                      completedMeal 
+                        ? "bg-green-500/15 border border-green-500/30" 
+                        : "bg-muted/50 border border-transparent hover:bg-muted"
+                    )}
+                  >
+                    <Checkbox 
+                      id="meal"
+                      checked={completedMeal}
+                      onCheckedChange={(checked) => setCompletedMeal(checked as boolean)}
+                    />
+                    <Apple className={cn("h-5 w-5", completedMeal ? "text-green-500" : "text-muted-foreground")} />
+                    <span className="font-medium flex-1">Segui o plano alimentar</span>
+                    {completedMeal && <span className="text-xl">🥗</span>}
+                  </label>
+                </div>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium mb-2 block">Como me senti hoje</label>
-            <Textarea
-              placeholder="Descreva como foi seu dia, o que comeu, como se sentiu durante o treino..."
-              value={currentNote}
-              onChange={(e) => setCurrentNote(e.target.value)}
-              className="min-h-[150px]"
-            />
-          </div>
+                {/* Notes */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                    Anotações do dia
+                  </label>
+                  <Textarea
+                    placeholder="Como foi seu dia? O que comeu? Como se sentiu?"
+                    value={currentNote}
+                    onChange={(e) => setCurrentNote(e.target.value)}
+                    className="min-h-[120px] resize-none"
+                  />
+                </div>
 
-          <Button
-            onClick={saveEntry}
-            disabled={loading}
-            className="w-full bg-gradient-primary hover:opacity-90 shadow-glow"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {loading ? "Salvando..." : "Salvar Entrada"}
-          </Button>
-        </Card>
-
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Entradas Anteriores</h2>
-          {entries.length === 0 ? (
-            <Card className="p-12 text-center">
-              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nenhuma entrada no diário ainda. Comece hoje!</p>
-            </Card>
-          ) : (
-            entries.map((entry) => {
-              const photos = (entry.photos as any) || {};
-              return (
-                <Card
-                  key={entry.id}
-                  className="p-4 hover:shadow-glow transition-all cursor-pointer"
-                  onClick={() => {
-                    setSelectedDate(entry.entry_date);
-                    setCurrentNote(entry.notes || "");
-                    const clickedPhotos = (entry.photos as any) || {};
-                    setCompletedWorkout(clickedPhotos.completedWorkout || false);
-                    setCompletedMeal(clickedPhotos.completedMeal || false);
-                  }}
+                <Button
+                  onClick={saveEntry}
+                  disabled={saving}
+                  className="w-full bg-gradient-primary hover:opacity-90 shadow-glow"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">
-                        {format(new Date(entry.entry_date), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                      </span>
+                  <Save className="mr-2 h-4 w-4" />
+                  {saving ? "Salvando..." : hasEntryToday ? "Atualizar" : "Salvar"}
+                </Button>
+              </Card>
+
+              {/* Recent Entries */}
+              <div>
+                <h3 className="font-semibold mb-3 text-muted-foreground">Últimas entradas</h3>
+                {entries.length === 0 ? (
+                  <Card className="p-8 text-center border-dashed">
+                    <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground font-medium">Nenhuma entrada ainda</p>
+                    <p className="text-sm text-muted-foreground">Comece registrando seu dia de hoje!</p>
+                  </Card>
+                ) : (
+                  <div className="space-y-2">
+                    {entries.slice(0, 5).map((entry) => {
+                      const photos = (entry.photos as any) || {};
+                      const isSelected = entry.entry_date === selectedDateStr;
+                      return (
+                        <Card
+                          key={entry.id}
+                          className={cn(
+                            "p-3 cursor-pointer transition-all",
+                            isSelected 
+                              ? "ring-2 ring-primary bg-primary/5" 
+                              : "hover:shadow-md hover:bg-muted/30"
+                          )}
+                          onClick={() => setSelectedDate(parseISO(entry.entry_date))}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-center justify-center bg-muted/50 rounded-lg px-3 py-2 min-w-[50px]">
+                              <span className="text-lg font-bold leading-none">
+                                {format(parseISO(entry.entry_date), "d")}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground uppercase">
+                                {format(parseISO(entry.entry_date), "MMM", { locale: ptBR })}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {entry.notes || "Sem anotações"}
+                              </p>
+                              <div className="flex gap-2 mt-1">
+                                {photos.completedWorkout && (
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <Dumbbell className="h-3 w-3" /> Treino
+                                  </span>
+                                )}
+                                {photos.completedMeal && (
+                                  <span className="text-xs bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <Apple className="h-3 w-3" /> Dieta
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Calendar Sidebar */}
+            <div className="order-1 md:order-2">
+              <Card className="p-4 sticky top-24">
+                {/* Month Navigation */}
+                <div className="flex items-center justify-between mb-3">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="font-semibold capitalize">
+                    {format(calendarMonth, "MMMM yyyy", { locale: ptBR })}
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Calendar */}
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
+                  locale={ptBR}
+                  className="w-full pointer-events-auto"
+                  modifiers={{
+                    hasEntry: (date) => entryDates.has(format(date, "yyyy-MM-dd")),
+                    isSelected: (date) => isSameDay(date, selectedDate)
+                  }}
+                  modifiersStyles={{
+                    hasEntry: {
+                      backgroundColor: "hsl(var(--primary) / 0.15)",
+                      fontWeight: "bold"
+                    }
+                  }}
+                  disabled={(date) => date > new Date()}
+                />
+
+                {/* Month Stats */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">
+                    Resumo de {format(calendarMonth, "MMMM", { locale: ptBR })}
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="text-center p-2 rounded-lg bg-muted/50">
+                      <div className="text-lg font-bold">{monthStats.total}</div>
+                      <div className="text-[10px] text-muted-foreground">Dias</div>
                     </div>
-                    <div className="flex gap-2">
-                      {photos.completedWorkout && (
-                        <div className="bg-primary/10 p-1 rounded">
-                          <Dumbbell className="h-3 w-3 text-primary" />
-                        </div>
-                      )}
-                      {photos.completedMeal && (
-                        <div className="bg-secondary/10 p-1 rounded">
-                          <Apple className="h-3 w-3 text-secondary" />
-                        </div>
-                      )}
+                    <div className="text-center p-2 rounded-lg bg-primary/10">
+                      <div className="text-lg font-bold text-primary">{monthStats.workoutDays}</div>
+                      <div className="text-[10px] text-muted-foreground">Treinos</div>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-green-500/10">
+                      <div className="text-lg font-bold text-green-600">{monthStats.mealDays}</div>
+                      <div className="text-[10px] text-muted-foreground">Dieta</div>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {entry.notes || "Sem anotações"}
-                  </p>
-                </Card>
-              );
-            })
-          )}
-        </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
