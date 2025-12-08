@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -6,13 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, Calendar, Target } from "lucide-react";
+import { 
+  ArrowLeft, User as UserIcon, Save, RotateCcw, Scale, TrendingDown, 
+  Calendar, Target, LogOut, Trophy, Flame, Moon, Dumbbell, Apple,
+  Medal, Star, Zap, Award, Crown, Edit2
+} from "lucide-react";
 import { Navigation } from "@/components/Navigation";
-import { format, differenceInDays, addDays } from "date-fns";
+import { format, differenceInDays, addDays, parseISO, subDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CircularProgress } from "@/components/CircularProgress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { cn } from "@/lib/utils";
 
 interface Profile {
   display_name: string;
@@ -35,6 +43,20 @@ interface WeightLog {
   created_at: string;
 }
 
+interface DiaryEntry {
+  entry_date: string;
+  photos: any;
+}
+
+interface Achievement {
+  id: string;
+  icon: any;
+  title: string;
+  description: string;
+  unlocked: boolean;
+  color: string;
+}
+
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile>({
@@ -50,619 +72,555 @@ const Profile = () => {
     dietary_restrictions: null,
   });
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
   const [newWeight, setNewWeight] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [completedDays, setCompletedDays] = useState(0);
+  const [editGoalOpen, setEditGoalOpen] = useState(false);
+  const [tempGoal, setTempGoal] = useState({ goal: "", target_weight_kg: "" });
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Diary stats
+  const diaryStats = useMemo(() => {
+    if (diaryEntries.length === 0) return { streak: 0, avgSleep: null, workoutDays: 0, dietDays: 0 };
+    
+    // Calculate streak
+    const sortedDates = diaryEntries
+      .map(e => parseISO(e.entry_date))
+      .sort((a, b) => b.getTime() - a.getTime());
+    
+    let streak = 0;
+    let checkDate = new Date();
+    const todayEntry = diaryEntries.find(e => e.entry_date === format(checkDate, "yyyy-MM-dd"));
+    if (!todayEntry) checkDate = subDays(checkDate, 1);
+    
+    for (const date of sortedDates) {
+      if (isSameDay(date, checkDate) || differenceInDays(checkDate, date) === 0) {
+        streak++;
+        checkDate = subDays(checkDate, 1);
+      } else if (differenceInDays(checkDate, date) === 1) {
+        streak++;
+        checkDate = date;
+      } else {
+        break;
+      }
+    }
+
+    // Sleep average
+    const sleepEntries = diaryEntries.filter(e => (e.photos as any)?.sleepHours != null);
+    const avgSleep = sleepEntries.length > 0 
+      ? (sleepEntries.reduce((acc, e) => acc + ((e.photos as any)?.sleepHours || 0), 0) / sleepEntries.length).toFixed(1)
+      : null;
+
+    // Workout and diet days
+    const workoutDays = diaryEntries.filter(e => (e.photos as any)?.completedWorkout).length;
+    const dietDays = diaryEntries.filter(e => (e.photos as any)?.completedMeal).length;
+
+    return { streak, avgSleep, workoutDays, dietDays };
+  }, [diaryEntries]);
+
+  // Achievements
+  const achievements = useMemo<Achievement[]>(() => {
+    const weightProgress = profile.initial_weight_kg && weightLogs.length > 0 
+      ? profile.initial_weight_kg - weightLogs[0].weight_kg 
+      : 0;
+
+    return [
+      { id: "first_day", icon: Star, title: "Primeiro Passo", description: "Completou o primeiro dia", unlocked: completedDays >= 1, color: "text-yellow-500" },
+      { id: "week_1", icon: Zap, title: "Semana 1", description: "7 dias de desafio", unlocked: completedDays >= 7, color: "text-blue-500" },
+      { id: "week_2", icon: Medal, title: "Semana 2", description: "14 dias de desafio", unlocked: completedDays >= 14, color: "text-purple-500" },
+      { id: "week_3", icon: Award, title: "Semana 3", description: "21 dias de desafio", unlocked: completedDays >= 21, color: "text-orange-500" },
+      { id: "champion", icon: Crown, title: "Campeão", description: "Completou os 30 dias!", unlocked: completedDays >= 30, color: "text-amber-500" },
+      { id: "first_kg", icon: Scale, title: "Primeiro Kg", description: "Perdeu 1kg", unlocked: weightProgress >= 1, color: "text-green-500" },
+      { id: "streak_7", icon: Flame, title: "Em Chamas", description: "7 dias de streak no diário", unlocked: diaryStats.streak >= 7, color: "text-red-500" },
+      { id: "early_bird", icon: Moon, title: "Bom Dormidor", description: "Média de 7h+ de sono", unlocked: diaryStats.avgSleep !== null && parseFloat(diaryStats.avgSleep) >= 7, color: "text-indigo-500" },
+    ];
+  }, [completedDays, profile.initial_weight_kg, weightLogs, diaryStats]);
+
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        loadProfile(session.user.id);
-        loadChallengeProgress(session.user.id);
+        loadAllData(session.user.id);
       } else {
         navigate("/auth");
       }
     });
   }, [navigate]);
 
-  const loadProfile = async (userId: string) => {
-    const { data } = await (supabase as any)
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
+  const loadAllData = async (userId: string) => {
+    setLoading(true);
+    
+    const [profileRes, logsRes, progressRes, diaryRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+      supabase.from("weight_logs").select("*").eq("user_id", userId).order("measured_at", { ascending: false }),
+      supabase.from("challenge_progress").select("day_num").eq("user_id", userId).eq("completed", true),
+      supabase.from("food_diary").select("entry_date, photos").eq("user_id", userId)
+    ]);
 
-    if (data) {
+    if (profileRes.data) {
       setProfile({
-        display_name: data.display_name || "",
-        age: data.age,
-        weight_kg: data.weight_kg,
-        height_cm: data.height_cm,
-        created_at: data.created_at,
-        goal: data.goal,
-        target_weight_kg: data.target_weight_kg,
-        experience_level: data.experience_level,
-        available_days: data.available_days,
-        dietary_restrictions: data.dietary_restrictions,
-        initial_weight_kg: data.initial_weight_kg,
+        display_name: profileRes.data.display_name || "",
+        age: profileRes.data.age,
+        weight_kg: profileRes.data.weight_kg,
+        height_cm: profileRes.data.height_cm,
+        created_at: profileRes.data.created_at,
+        goal: profileRes.data.goal,
+        target_weight_kg: profileRes.data.target_weight_kg,
+        experience_level: profileRes.data.experience_level,
+        available_days: profileRes.data.available_days,
+        dietary_restrictions: profileRes.data.dietary_restrictions,
+        initial_weight_kg: profileRes.data.initial_weight_kg,
+      });
+      setTempGoal({ 
+        goal: profileRes.data.goal || "", 
+        target_weight_kg: profileRes.data.target_weight_kg?.toString() || "" 
       });
     }
-
-    // Load weight logs
-    const { data: logs } = await (supabase as any)
-      .from("weight_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .order("measured_at", { ascending: false });
-
-    if (logs) {
-      setWeightLogs(logs);
-    }
-  };
-
-  const loadChallengeProgress = async (userId: string) => {
-    const { data } = await (supabase as any)
-      .from("challenge_progress")
-      .select("day_num")
-      .eq("user_id", userId)
-      .eq("completed", true);
-
-    if (data) {
-      setCompletedDays(data.length);
-    }
+    if (logsRes.data) setWeightLogs(logsRes.data);
+    if (progressRes.data) setCompletedDays(progressRes.data.length);
+    if (diaryRes.data) setDiaryEntries(diaryRes.data);
+    
+    setLoading(false);
   };
 
   const saveProfile = async () => {
     if (!user) return;
-
-    setLoading(true);
-    const { error } = await (supabase as any)
+    setSaving(true);
+    
+    const { error } = await supabase
       .from("profiles")
       .update(profile)
       .eq("id", user.id);
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao atualizar perfil",
-      });
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar perfil" });
     } else {
-      toast({
-        title: "Sucesso!",
-        description: "Seu perfil foi atualizado",
-      });
+      toast({ title: "Sucesso!", description: "Perfil atualizado" });
     }
-    setLoading(false);
+    setSaving(false);
+  };
+
+  const saveGoal = async () => {
+    if (!user) return;
+    setSaving(true);
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        goal: tempGoal.goal, 
+        target_weight_kg: parseFloat(tempGoal.target_weight_kg) || null 
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar meta" });
+    } else {
+      toast({ title: "Meta atualizada!" });
+      setProfile(prev => ({ 
+        ...prev, 
+        goal: tempGoal.goal, 
+        target_weight_kg: parseFloat(tempGoal.target_weight_kg) || null 
+      }));
+      setEditGoalOpen(false);
+    }
+    setSaving(false);
   };
 
   const addWeightLog = async () => {
     if (!user || !newWeight) return;
-
     const weight = parseFloat(newWeight);
     if (isNaN(weight) || weight <= 0) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Digite um peso válido",
-      });
+      toast({ variant: "destructive", title: "Erro", description: "Digite um peso válido" });
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     
-    // Check if initial weight needs to be set
-    if (!profile.initial_weight_kg) {
-      await (supabase as any)
-        .from("profiles")
-        .update({ 
-          weight_kg: weight,
-          initial_weight_kg: weight // Save initial weight only once
-        })
-        .eq("id", user.id);
-    } else {
-      // Just update current weight
-      await (supabase as any)
-        .from("profiles")
-        .update({ weight_kg: weight })
-        .eq("id", user.id);
-    }
+    const updateData: any = { weight_kg: weight };
+    if (!profile.initial_weight_kg) updateData.initial_weight_kg = weight;
     
-    // Add to weight logs
-    const { error } = await (supabase as any)
+    await supabase.from("profiles").update(updateData).eq("id", user.id);
+    
+    const { error } = await supabase
       .from("weight_logs")
-      .insert({
-        user_id: user.id,
-        weight_kg: weight,
-        measured_at: new Date().toISOString(),
-      });
+      .insert({ user_id: user.id, weight_kg: weight, measured_at: new Date().toISOString() });
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao registrar pesagem",
-      });
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao registrar pesagem" });
     } else {
-      toast({
-        title: "Pesagem Registrada!",
-        description: `Peso registrado: ${weight}kg`,
-      });
-      
+      toast({ title: "Pesagem Registrada!", description: `${weight}kg` });
       setNewWeight("");
-      loadProfile(user.id);
+      loadAllData(user.id);
     }
-    setLoading(false);
+    setSaving(false);
   };
 
   const deleteWeightLog = async (logId: string) => {
     if (!user) return;
-
-    setLoading(true);
-    const { error } = await (supabase as any)
-      .from("weight_logs")
-      .delete()
-      .eq("id", logId);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao deletar pesagem",
-      });
-    } else {
-      toast({
-        title: "Pesagem Deletada",
-        description: "Registro removido com sucesso",
-      });
-      loadProfile(user.id);
+    const { error } = await supabase.from("weight_logs").delete().eq("id", logId);
+    if (!error) {
+      toast({ title: "Pesagem removida" });
+      loadAllData(user.id);
     }
-    setLoading(false);
   };
 
   const resetChallenge = async () => {
-    if (!user) return;
+    if (!user || !window.confirm("Tem certeza que deseja resetar todo o desafio?")) return;
     
-    const confirmed = window.confirm("Tem certeza que deseja resetar todo o desafio? Esta ação não pode ser desfeita.");
-    if (!confirmed) return;
-
-    setLoading(true);
-    const { error } = await (supabase as any)
-      .from("challenge_progress")
-      .delete()
-      .eq("user_id", user.id);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Falha ao resetar desafio",
-      });
-    } else {
-      toast({
-        title: "Desafio Resetado!",
-        description: "Você pode começar novamente do zero",
-      });
+    const { error } = await supabase.from("challenge_progress").delete().eq("user_id", user.id);
+    if (!error) {
+      toast({ title: "Desafio Resetado!" });
+      setCompletedDays(0);
     }
-    setLoading(false);
   };
 
-  const getNextWeighInDate = () => {
-    if (!profile.created_at) return null;
-    
-    const profileCreated = new Date(profile.created_at);
-    const today = new Date();
-    const daysSinceCreation = differenceInDays(today, profileCreated);
-    
-    // Calculate next 7-day interval
-    const nextInterval = Math.ceil((daysSinceCreation + 1) / 7) * 7;
-    return addDays(profileCreated, nextInterval);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   const getWeightProgress = () => {
     if (!profile.initial_weight_kg || weightLogs.length === 0) return null;
-    
-    const inicial = profile.initial_weight_kg;
-    const latest = weightLogs[0].weight_kg;
-    const diff = inicial - latest;
-    
-    return {
-      diff: diff,
-      percentage: ((diff / inicial) * 100).toFixed(1)
-    };
+    const diff = profile.initial_weight_kg - weightLogs[0].weight_kg;
+    return { diff, percentage: ((diff / profile.initial_weight_kg) * 100).toFixed(1) };
   };
 
   const calculateBMI = () => {
     if (!profile.weight_kg || !profile.height_cm) return null;
-    const heightInMeters = profile.height_cm / 100;
-    const bmi = profile.weight_kg / (heightInMeters * heightInMeters);
-    return bmi.toFixed(1);
+    return (profile.weight_kg / Math.pow(profile.height_cm / 100, 2)).toFixed(1);
   };
 
   const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: "Abaixo do Peso", color: "text-blue-500" };
-    if (bmi < 25) return { label: "Peso Normal", color: "text-green-500" };
+    if (bmi < 18.5) return { label: "Abaixo", color: "text-blue-500" };
+    if (bmi < 25) return { label: "Normal", color: "text-green-500" };
     if (bmi < 30) return { label: "Sobrepeso", color: "text-yellow-500" };
     return { label: "Obesidade", color: "text-red-500" };
   };
 
-  const getGoalLabel = (goal: string | null) => {
-    const goals: Record<string, string> = {
-      lose_weight: "Perder Peso",
-      gain_muscle: "Ganhar Massa",
-      get_fit: "Ficar em Forma",
-      maintain: "Manter Peso"
-    };
-    return goal ? goals[goal] : "Não definido";
+  const goalLabels: Record<string, string> = {
+    lose_weight: "Perder Peso", gain_muscle: "Ganhar Massa", 
+    get_fit: "Ficar em Forma", maintain: "Manter Peso"
   };
 
-  const getLevelLabel = (level: string | null) => {
-    const levels: Record<string, string> = {
-      beginner: "Iniciante",
-      intermediate: "Intermediário",
-      advanced: "Avançado"
-    };
-    return level ? levels[level] : "Não definido";
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pt-20">
+        <Navigation />
+        <header className="bg-gradient-primary text-primary-foreground py-6 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Skeleton className="h-8 w-32 mb-4 bg-white/20" />
+            <Skeleton className="h-10 w-48 bg-white/20" />
+          </div>
+        </header>
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          <Skeleton className="h-[200px] w-full rounded-xl" />
+          <Skeleton className="h-[150px] w-full rounded-xl" />
+          <Skeleton className="h-[300px] w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pt-20">
       <Navigation />
+      
+      {/* Header */}
       <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
-        <div className="max-w-2xl mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="mb-4 text-primary-foreground hover:bg-white/20"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Dashboard
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <UserIcon className="h-6 w-6" />
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-primary-foreground hover:bg-white/20">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+            </Button>
+            <Button variant="ghost" onClick={handleLogout} className="text-primary-foreground hover:bg-white/20">
+              <LogOut className="mr-2 h-4 w-4" /> Sair
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="bg-white/20 p-4 rounded-full">
+              <UserIcon className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Seu Perfil</h1>
-              <p className="text-sm opacity-90">Gerencie suas informações pessoais</p>
+              <h1 className="text-2xl font-bold">{profile.display_name || "Seu Perfil"}</h1>
+              <p className="text-sm opacity-90">{user?.email}</p>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Circular Progress Card */}
-        <Card className="p-6 bg-gradient-card shadow-card mb-6">
-          <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Progresso do Desafio
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-primary">{completedDays}</div>
+            <div className="text-xs text-muted-foreground">Dias Completos</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-orange-500 flex items-center justify-center gap-1">
+              <Flame className="h-5 w-5" />{diaryStats.streak}
+            </div>
+            <div className="text-xs text-muted-foreground">Streak Diário</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-indigo-400">{diaryStats.avgSleep || "-"}h</div>
+            <div className="text-xs text-muted-foreground">Média de Sono</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-3xl font-bold text-green-500">{unlockedAchievements.length}</div>
+            <div className="text-xs text-muted-foreground">Conquistas</div>
+          </Card>
+        </div>
+
+        {/* Achievements */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-amber-500" /> Conquistas
           </h3>
-          
-          <div className="flex flex-col items-center justify-center mb-6">
-            <CircularProgress
-              percentage={(completedDays / 30) * 100}
-              size={120}
-              strokeWidth={8}
-              activeColor="#00ff88"
-              backgroundColor="rgba(255,255,255,0.1)"
-            >
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground">
-                  {completedDays}/30
-                </div>
-                <div className="text-xs text-muted-foreground">dias</div>
-                {profile.weight_kg && profile.target_weight_kg && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Meta: {weightLogs.length > 0 ? weightLogs[0].weight_kg : profile.weight_kg} → {profile.target_weight_kg}kg
+          <div className="grid grid-cols-4 gap-3">
+            {achievements.map((achievement) => {
+              const Icon = achievement.icon;
+              return (
+                <div 
+                  key={achievement.id} 
+                  className={cn(
+                    "flex flex-col items-center text-center p-3 rounded-xl transition-all",
+                    achievement.unlocked 
+                      ? "bg-gradient-to-b from-primary/10 to-transparent" 
+                      : "opacity-40 grayscale"
+                  )}
+                  title={achievement.description}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center mb-2",
+                    achievement.unlocked ? "bg-primary/20" : "bg-muted"
+                  )}>
+                    <Icon className={cn("h-6 w-6", achievement.unlocked ? achievement.color : "text-muted-foreground")} />
                   </div>
-                )}
+                  <span className="text-[10px] font-medium leading-tight">{achievement.title}</span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Progress + Goal Row */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Challenge Progress */}
+          <Card className="p-5">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" /> Progresso do Desafio
+            </h3>
+            <div className="flex items-center justify-center">
+              <CircularProgress
+                percentage={(completedDays / 30) * 100}
+                size={140}
+                strokeWidth={10}
+                activeColor="#00ff88"
+                backgroundColor="rgba(255,255,255,0.1)"
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold">{completedDays}/30</div>
+                  <div className="text-xs text-muted-foreground">dias</div>
+                </div>
+              </CircularProgress>
+            </div>
+          </Card>
+
+          {/* Goal Card */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" /> Sua Meta
+              </h3>
+              <Dialog open={editGoalOpen} onOpenChange={setEditGoalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Editar Meta</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Objetivo</Label>
+                      <Select value={tempGoal.goal} onValueChange={(v) => setTempGoal(p => ({ ...p, goal: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="lose_weight">Perder Peso</SelectItem>
+                          <SelectItem value="gain_muscle">Ganhar Massa</SelectItem>
+                          <SelectItem value="get_fit">Ficar em Forma</SelectItem>
+                          <SelectItem value="maintain">Manter Peso</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Peso Meta (kg)</Label>
+                      <Input 
+                        type="number" 
+                        value={tempGoal.target_weight_kg} 
+                        onChange={(e) => setTempGoal(p => ({ ...p, target_weight_kg: e.target.value }))}
+                        placeholder="65"
+                      />
+                    </div>
+                    <Button onClick={saveGoal} disabled={saving} className="w-full bg-gradient-primary">
+                      {saving ? "Salvando..." : "Salvar Meta"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Objetivo</span>
+                <span className="font-semibold">{goalLabels[profile.goal || ""] || "Não definido"}</span>
               </div>
-            </CircularProgress>
-            
-            {/* Next Weigh-In and Button */}
-            <div className="mt-6 text-center space-y-3 w-full">
-              {profile.created_at && (
-                <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Próxima pesagem: {getNextWeighInDate() ? format(getNextWeighInDate()!, "dd 'de' MMMM", { locale: ptBR }) : "Não definido"}
+              <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                <span className="text-sm text-muted-foreground">Peso Meta</span>
+                <span className="font-semibold">{profile.target_weight_kg ? `${profile.target_weight_kg}kg` : "Não definido"}</span>
+              </div>
+              {getWeightProgress() && (
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm flex items-center gap-2">
+                      <TrendingDown className="h-4 w-4 text-green-500" /> Progresso
+                    </span>
+                    <span className="font-bold text-green-500">
+                      {getWeightProgress()!.diff > 0 ? '-' : '+'}{Math.abs(getWeightProgress()!.diff).toFixed(1)}kg
+                    </span>
+                  </div>
                 </div>
               )}
-              
-              <div className="flex gap-2 max-w-md mx-auto">
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={newWeight}
-                  onChange={(e) => setNewWeight(e.target.value)}
-                  placeholder="Ex: 70.5"
-                  className="flex-1"
-                />
-                <Button
-                  onClick={addWeightLog}
-                  disabled={loading || !newWeight}
-                  className="bg-gradient-primary hover:opacity-90"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Registrar nova pesagem
-                </Button>
-              </div>
             </div>
-          </div>
+          </Card>
+        </div>
 
-          {/* Weight Progress */}
-          {getWeightProgress() && (
-            <div className="bg-gradient-primary/10 p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-green-500" />
-                  <span className="font-semibold">Progresso Total de Peso</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-500">
-                    {getWeightProgress()!.diff > 0 ? '-' : '+'}{Math.abs(getWeightProgress()!.diff).toFixed(1)}kg
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {getWeightProgress()!.percentage}% do peso inicial
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* IMC and Stats Card */}
-        <Card className="p-6 bg-gradient-card shadow-card mb-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Suas Estatísticas
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* IMC */}
+        {/* Stats Row */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4">Estatísticas</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {calculateBMI() && (
-              <div className="text-center p-4 bg-background/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">IMC</p>
-                <p className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  {calculateBMI()}
-                </p>
-                <p className={`text-xs mt-1 font-medium ${getBMICategory(parseFloat(calculateBMI()!)).color}`}>
-                  {getBMICategory(parseFloat(calculateBMI()!)).label}
-                </p>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{calculateBMI()}</div>
+                <div className={`text-xs font-medium ${getBMICategory(parseFloat(calculateBMI()!)).color}`}>
+                  IMC • {getBMICategory(parseFloat(calculateBMI()!)).label}
+                </div>
               </div>
             )}
-            
-            {/* Peso Atual */}
             {weightLogs.length > 0 && (
-              <div className="text-center p-4 bg-background/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Peso Atual</p>
-                <p className="text-3xl font-bold text-primary">{weightLogs[0].weight_kg}</p>
-                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold">{weightLogs[0].weight_kg}kg</div>
+                <div className="text-xs text-muted-foreground">Peso Atual</div>
               </div>
             )}
-            
-            {/* Peso Inicial */}
             {profile.initial_weight_kg && (
-              <div className="text-center p-4 bg-background/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Peso Inicial</p>
-                <p className="text-3xl font-bold text-primary">{profile.initial_weight_kg}</p>
-                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold">{profile.initial_weight_kg}kg</div>
+                <div className="text-xs text-muted-foreground">Peso Inicial</div>
               </div>
             )}
-            
-            {/* Meta de Peso */}
-            {profile.target_weight_kg && (
-              <div className="text-center p-4 bg-background/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Meta</p>
-                <p className="text-3xl font-bold text-primary">{profile.target_weight_kg}</p>
-                <p className="text-xs mt-1 text-muted-foreground">kg</p>
+            <div className="text-center p-3 bg-primary/10 rounded-lg">
+              <div className="text-2xl font-bold text-primary">{diaryStats.workoutDays}</div>
+              <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                <Dumbbell className="h-3 w-3" /> Treinos
               </div>
-            )}
-            
-            {/* Objetivo */}
-            {profile.goal && (
-              <div className="text-center p-4 bg-background/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Objetivo</p>
-                <p className="text-lg font-bold text-primary">{getGoalLabel(profile.goal)}</p>
-                <p className="text-xs mt-1 text-muted-foreground">{getLevelLabel(profile.experience_level)}</p>
+            </div>
+            <div className="text-center p-3 bg-green-500/10 rounded-lg">
+              <div className="text-2xl font-bold text-green-500">{diaryStats.dietDays}</div>
+              <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                <Apple className="h-3 w-3" /> Dieta
               </div>
-            )}
+            </div>
           </div>
         </Card>
 
-        <Card className="p-6 bg-gradient-card shadow-card mb-6">
-          <h3 className="text-lg font-semibold mb-4">Informações Pessoais</h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="display_name">Nome</Label>
-              <Input
-                id="display_name"
-                value={profile.display_name}
-                onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
-                placeholder="Seu nome"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={user?.email || ""}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">Email não pode ser alterado</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="age">Idade</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={profile.age || ""}
-                  onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || null })}
-                  placeholder="25"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="weight">Peso (kg)</Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  step="0.1"
-                  value={profile.weight_kg || ""}
-                  onChange={(e) => setProfile({ ...profile, weight_kg: parseFloat(e.target.value) || null })}
-                  placeholder="70"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="height">Altura (cm)</Label>
-                <Input
-                  id="height"
-                  type="number"
-                  value={profile.height_cm || ""}
-                  onChange={(e) => setProfile({ ...profile, height_cm: parseInt(e.target.value) || null })}
-                  placeholder="170"
-                />
-              </div>
-            </div>
-
-            <Button
-              onClick={saveProfile}
-              disabled={loading}
-              className="w-full bg-gradient-primary hover:opacity-90 shadow-glow"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {loading ? "Salvando..." : "Salvar Perfil"}
+        {/* Weight Registration */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Scale className="h-5 w-5 text-primary" /> Registrar Peso
+          </h3>
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              step="0.1"
+              value={newWeight}
+              onChange={(e) => setNewWeight(e.target.value)}
+              placeholder="Ex: 70.5"
+              className="flex-1"
+            />
+            <Button onClick={addWeightLog} disabled={saving || !newWeight} className="bg-gradient-primary">
+              <Save className="mr-2 h-4 w-4" /> Registrar
             </Button>
           </div>
         </Card>
 
-        {/* Weight Tracking Section */}
-        <Card className="p-6 bg-gradient-card shadow-card">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-primary/20 p-2 rounded-full">
-              <Scale className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Histórico de Pesagens</h3>
-              <p className="text-sm text-muted-foreground">Acompanhe seu peso ao longo do tempo</p>
-            </div>
-          </div>
+        {/* Weight Chart */}
+        {weightLogs.length > 1 && (
+          <Card className="p-5">
+            <h3 className="font-semibold mb-4">Evolução do Peso</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart 
+                data={[...weightLogs].reverse().map(log => ({
+                  data: format(new Date(log.measured_at), "dd/MM"),
+                  peso: log.weight_kg
+                }))}
+                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="data" stroke="currentColor" style={{ fontSize: '12px' }} />
+                <YAxis stroke="currentColor" style={{ fontSize: '12px' }} domain={['dataMin - 2', 'dataMax + 2']} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+                />
+                <Line type="monotone" dataKey="peso" stroke="#00ff88" strokeWidth={3} dot={{ fill: '#00ff88', r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        )}
 
-          {/* Weight Evolution Chart */}
-          {weightLogs.length > 1 && (
-            <div className="mb-6">
-              <h4 className="font-semibold text-sm mb-3">Evolução do Peso</h4>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart 
-                  data={[...weightLogs].reverse().map(log => ({
-                    data: format(new Date(log.measured_at), "dd/MM"),
-                    peso: log.weight_kg
-                  }))}
-                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis 
-                    dataKey="data" 
-                    stroke="currentColor" 
-                    style={{ fontSize: '12px' }}
-                  />
-                  <YAxis 
-                    stroke="currentColor" 
-                    style={{ fontSize: '12px' }}
-                    domain={['dataMin - 2', 'dataMax + 2']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="peso" 
-                    stroke="#00ff88" 
-                    strokeWidth={3}
-                    dot={{ fill: '#00ff88', r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* Weight History */}
-          {weightLogs.length > 0 && (
+        {/* Personal Info */}
+        <Card className="p-5">
+          <h3 className="font-semibold mb-4">Informações Pessoais</h3>
+          <div className="space-y-4">
             <div className="space-y-2">
-              <h4 className="font-semibold text-sm mb-3">Histórico de Pesagens</h4>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {weightLogs.map((log, index) => {
-                  const previousWeight = weightLogs[index + 1]?.weight_kg;
-                  const diff = previousWeight ? previousWeight - log.weight_kg : 0;
-                  
-                  return (
-                    <div
-                      key={log.id}
-                      className="flex items-center justify-between p-3 bg-background/50 rounded-lg border"
-                    >
-                      <div className="flex-1">
-                        <div className="font-semibold">{log.weight_kg}kg</div>
-                        <div className="text-xs text-muted-foreground">
-                          {format(new Date(log.measured_at), "dd/MM/yyyy 'às' HH:mm")}
-                        </div>
-                      </div>
-                      {diff !== 0 && (
-                        <div className={`text-sm font-medium px-2 py-1 rounded ${
-                          diff > 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'
-                        }`}>
-                          {diff > 0 ? '-' : '+'}{Math.abs(diff).toFixed(1)}kg
-                        </div>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteWeightLog(log.id)}
-                        className="ml-2 text-destructive hover:text-destructive"
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  );
-                })}
+              <Label>Nome</Label>
+              <Input value={profile.display_name} onChange={(e) => setProfile({ ...profile, display_name: e.target.value })} placeholder="Seu nome" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Idade</Label>
+                <Input type="number" value={profile.age || ""} onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || null })} placeholder="25" />
+              </div>
+              <div className="space-y-2">
+                <Label>Peso (kg)</Label>
+                <Input type="number" step="0.1" value={profile.weight_kg || ""} onChange={(e) => setProfile({ ...profile, weight_kg: parseFloat(e.target.value) || null })} placeholder="70" />
+              </div>
+              <div className="space-y-2">
+                <Label>Altura (cm)</Label>
+                <Input type="number" value={profile.height_cm || ""} onChange={(e) => setProfile({ ...profile, height_cm: parseInt(e.target.value) || null })} placeholder="170" />
               </div>
             </div>
-          )}
-
-          {weightLogs.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Scale className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhuma pesagem registrada ainda</p>
-              <p className="text-xs">Registre seu peso para acompanhar seu progresso</p>
-            </div>
-          )}
+            <Button onClick={saveProfile} disabled={saving} className="w-full bg-gradient-primary">
+              <Save className="mr-2 h-4 w-4" /> {saving ? "Salvando..." : "Salvar Perfil"}
+            </Button>
+          </div>
         </Card>
 
-        <Card className="p-6 bg-gradient-card shadow-card border-destructive/50">
-          <h3 className="text-lg font-semibold mb-2 text-destructive">Zona de Perigo</h3>
+        {/* Danger Zone */}
+        <Card className="p-5 border-destructive/30">
+          <h3 className="font-semibold mb-2 text-destructive">Zona de Perigo</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Resetar o desafio irá apagar todo o seu progresso atual. Esta ação não pode ser desfeita.
+            Resetar o desafio irá apagar todo o seu progresso. Esta ação não pode ser desfeita.
           </p>
-          <Button
-            onClick={resetChallenge}
-            disabled={loading}
-            variant="destructive"
-            className="w-full"
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            {loading ? "Resetando..." : "Resetar Desafio"}
+          <Button onClick={resetChallenge} variant="destructive" className="w-full">
+            <RotateCcw className="mr-2 h-4 w-4" /> Resetar Desafio
           </Button>
         </Card>
       </div>
