@@ -9,7 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, Save, Dumbbell, Apple, Flame, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, BookOpen, Save, Dumbbell, Apple, Flame, CalendarDays, ChevronLeft, ChevronRight, Moon } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday, parseISO, differenceInDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Navigation } from "@/components/Navigation";
@@ -30,6 +31,7 @@ const Diario = () => {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [completedWorkout, setCompletedWorkout] = useState(false);
   const [completedMeal, setCompletedMeal] = useState(false);
+  const [sleepHours, setSleepHours] = useState<number>(7);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -84,8 +86,12 @@ const Diario = () => {
     
     const workoutDays = monthEntries.filter(e => (e.photos as any)?.completedWorkout).length;
     const mealDays = monthEntries.filter(e => (e.photos as any)?.completedMeal).length;
+    const sleepEntries = monthEntries.filter(e => (e.photos as any)?.sleepHours != null);
+    const avgSleep = sleepEntries.length > 0 
+      ? (sleepEntries.reduce((acc, e) => acc + ((e.photos as any)?.sleepHours || 0), 0) / sleepEntries.length).toFixed(1)
+      : null;
     
-    return { total: monthEntries.length, workoutDays, mealDays };
+    return { total: monthEntries.length, workoutDays, mealDays, avgSleep };
   }, [entries, calendarMonth]);
 
   useEffect(() => {
@@ -109,10 +115,12 @@ const Diario = () => {
       const photos = (entry.photos as any) || {};
       setCompletedWorkout(photos.completedWorkout || false);
       setCompletedMeal(photos.completedMeal || false);
+      setSleepHours(photos.sleepHours ?? 7);
     } else {
       setCurrentNote("");
       setCompletedWorkout(false);
       setCompletedMeal(false);
+      setSleepHours(7);
     }
   }, [selectedDate, entries]);
 
@@ -141,7 +149,8 @@ const Diario = () => {
       notes: currentNote,
       photos: {
         completedWorkout,
-        completedMeal
+        completedMeal,
+        sleepHours
       }
     };
 
@@ -283,6 +292,33 @@ const Diario = () => {
                     <span className="font-medium flex-1">Segui o plano alimentar</span>
                     {completedMeal && <span className="text-xl">🥗</span>}
                   </label>
+
+                  {/* Sleep Tracker */}
+                  <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Moon className="h-5 w-5 text-indigo-400" />
+                      <span className="font-medium flex-1">Horas de sono</span>
+                      <span className="text-lg font-bold text-indigo-400">
+                        {sleepHours}h
+                      </span>
+                      {sleepHours >= 7 && <span className="text-xl">😴</span>}
+                      {sleepHours < 6 && <span className="text-xl">😵</span>}
+                      {sleepHours >= 6 && sleepHours < 7 && <span className="text-xl">😐</span>}
+                    </div>
+                    <Slider
+                      value={[sleepHours]}
+                      onValueChange={(value) => setSleepHours(value[0])}
+                      min={0}
+                      max={12}
+                      step={0.5}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>0h</span>
+                      <span>6h</span>
+                      <span>12h</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Notes */}
@@ -346,7 +382,7 @@ const Diario = () => {
                               <p className="text-sm text-muted-foreground line-clamp-1">
                                 {entry.notes || "Sem anotações"}
                               </p>
-                              <div className="flex gap-2 mt-1">
+                              <div className="flex gap-2 mt-1 flex-wrap">
                                 {photos.completedWorkout && (
                                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex items-center gap-1">
                                     <Dumbbell className="h-3 w-3" /> Treino
@@ -355,6 +391,11 @@ const Diario = () => {
                                 {photos.completedMeal && (
                                   <span className="text-xs bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full flex items-center gap-1">
                                     <Apple className="h-3 w-3" /> Dieta
+                                  </span>
+                                )}
+                                {photos.sleepHours != null && (
+                                  <span className="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <Moon className="h-3 w-3" /> {photos.sleepHours}h
                                   </span>
                                 )}
                               </div>
@@ -419,7 +460,7 @@ const Diario = () => {
                   <h4 className="text-sm font-medium text-muted-foreground mb-3">
                     Resumo de {format(calendarMonth, "MMMM", { locale: ptBR })}
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <div className="text-center p-2 rounded-lg bg-muted/50">
                       <div className="text-lg font-bold">{monthStats.total}</div>
                       <div className="text-[10px] text-muted-foreground">Dias</div>
@@ -431,6 +472,10 @@ const Diario = () => {
                     <div className="text-center p-2 rounded-lg bg-green-500/10">
                       <div className="text-lg font-bold text-green-600">{monthStats.mealDays}</div>
                       <div className="text-[10px] text-muted-foreground">Dieta</div>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-indigo-500/10">
+                      <div className="text-lg font-bold text-indigo-400">{monthStats.avgSleep || "-"}h</div>
+                      <div className="text-[10px] text-muted-foreground">Sono médio</div>
                     </div>
                   </div>
                 </div>
