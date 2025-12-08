@@ -427,36 +427,80 @@ export type Database = {
       }
       recipes: {
         Row: {
+          calories: number | null
           category: string | null
           created_at: string | null
+          description: string | null
+          difficulty: string | null
           id: string
           ingredients: Json | null
           photo_url: string | null
+          prep_time_min: number | null
+          servings: number | null
           steps: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          calories?: number | null
           category?: string | null
           created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
           id?: string
           ingredients?: Json | null
           photo_url?: string | null
+          prep_time_min?: number | null
+          servings?: number | null
           steps?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          calories?: number | null
           category?: string | null
           created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
           id?: string
           ingredients?: Json | null
           photo_url?: string | null
+          prep_time_min?: number | null
+          servings?: number | null
           steps?: string | null
           title?: string
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_favorite_recipes: {
+        Row: {
+          created_at: string
+          id: string
+          recipe_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipe_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipe_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorite_recipes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
