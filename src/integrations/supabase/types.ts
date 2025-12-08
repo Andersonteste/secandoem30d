@@ -358,6 +358,7 @@ export type Database = {
           initial_weight_kg: number | null
           onboarding_completed: boolean | null
           target_weight_kg: number | null
+          tour_completed: boolean | null
           updated_at: string | null
           weight_kg: number | null
         }
@@ -374,6 +375,7 @@ export type Database = {
           initial_weight_kg?: number | null
           onboarding_completed?: boolean | null
           target_weight_kg?: number | null
+          tour_completed?: boolean | null
           updated_at?: string | null
           weight_kg?: number | null
         }
@@ -390,6 +392,7 @@ export type Database = {
           initial_weight_kg?: number | null
           onboarding_completed?: boolean | null
           target_weight_kg?: number | null
+          tour_completed?: boolean | null
           updated_at?: string | null
           weight_kg?: number | null
         }
