@@ -25,19 +25,29 @@ interface Recipe {
   description?: string;
 }
 
-const categoryFilters = ["Tudo", "Sucos", "Doces", "Saladas", "Shake", "Low carb", "Sopas", "Pizza's fit", "Chás", "Wrap's"];
+const categoryFilters = ["Tudo", "Cafe", "Almoco", "Jantar", "Lanche", "Sucos", "Chás", "Doces", "Salgados"];
+
+const categoryLabels: Record<string, string> = {
+  "Cafe": "Café da manhã",
+  "Almoco": "Almoço",
+  "Jantar": "Jantar",
+  "Lanche": "Lanches",
+  "Sucos": "Sucos",
+  "Chás": "Chás",
+  "Doces": "Doces",
+  "Salgados": "Salgados",
+};
 
 const getCategoryIcon = (category: string) => {
   const iconMap: Record<string, any> = {
+    "Cafe": Coffee,
+    "Almoco": UtensilsCrossed,
+    "Jantar": UtensilsCrossed,
+    "Lanche": Cookie,
     "Sucos": Droplets,
-    "Doces": Cookie,
-    "Saladas": Salad,
-    "Shake": Coffee,
-    "Low carb": Leaf,
-    "Sopas": UtensilsCrossed,
-    "Pizza's fit": UtensilsCrossed,
     "Chás": Leaf,
-    "Wrap's": Fish,
+    "Doces": Cookie,
+    "Salgados": Fish,
   };
   return iconMap[category] || Salad;
 };
@@ -204,7 +214,7 @@ const Refeicoes = () => {
                 onClick={() => setSelectedCategory(category)}
                 className={`whitespace-nowrap ${selectedCategory === category ? "bg-gradient-primary text-primary-foreground" : ""}`}
               >
-                {category}
+                {category === "Tudo" ? "Tudo" : categoryLabels[category] || category}
               </Button>
             ))}
           </div>
