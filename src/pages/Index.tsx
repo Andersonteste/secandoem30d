@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Apple, Target, CheckCircle2, Camera, Sparkles, Droplets, BookOpen, Gift, Users, ChefHat, Flame } from "lucide-react";
-import logoImage from "@/assets/logo-secando.png";
+import logoImage from "@/assets/logo-desafio.png";
 const Index = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -25,8 +25,8 @@ const Index = () => {
           <div className="text-center mb-8 animate-fade-in">
             <img 
               src={logoImage} 
-              alt="Secando em Casa Logo" 
-              className="w-80 h-auto mx-auto mb-8"
+              alt="Desafio 30 Dias Pedro Bahia" 
+              className="w-96 h-auto mx-auto mb-8"
             />
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Sua Transformação Começa Aqui
@@ -212,18 +212,6 @@ const Index = () => {
                 <h4 className="font-bold text-lg mb-2">Escolha Seu Dia</h4>
                 <p className="text-muted-foreground">
                   Navegue pelos 30 dias e acesse treinos em vídeo e cardápios completos
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="bg-gradient-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
-                3
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2">Treine e Registre</h4>
-                <p className="text-muted-foreground">
-                  Navegue pelos 30 dias e acesse treinos em vídeo e cardápios em PDF
                 </p>
               </div>
             </div>
