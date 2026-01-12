@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ArrowLeft, Search, ChefHat, Clock, Users, Heart, Share2, Droplets, Cookie, Salad, Coffee, UtensilsCrossed, Leaf, Fish } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonRecipeCard } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 interface Recipe {
@@ -148,18 +148,7 @@ const Refeicoes = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const RecipeSkeleton = () => (
-    <Card className="p-3">
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-14 h-14 rounded-lg" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/4" />
-        </div>
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    </Card>
-  );
+  // Removed old RecipeSkeleton - using SkeletonRecipeCard from skeleton.tsx
 
   return (
     <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
@@ -237,7 +226,7 @@ const Refeicoes = () => {
         {/* Recipe List */}
         {loading ? (
           <div className="space-y-3">
-            {[...Array(6)].map((_, i) => <RecipeSkeleton key={i} />)}
+            {[...Array(6)].map((_, i) => <SkeletonRecipeCard key={i} />)}
           </div>
         ) : filteredRecipes.length === 0 ? (
           <Card className="p-12 text-center border-dashed">

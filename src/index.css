@@ -182,13 +182,18 @@ All colors MUST be HSL.
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .animate-float {
@@ -198,9 +203,39 @@ All colors MUST be HSL.
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: skeleton-loading 2s infinite;
 }
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Skeleton shimmer effect */
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.04) 20%,
+    hsl(var(--foreground) / 0.08) 50%,
+    hsl(var(--foreground) / 0.04) 80%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.dark .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.03) 20%,
+    hsl(var(--foreground) / 0.06) 50%,
+    hsl(var(--foreground) / 0.03) 80%,
+    transparent 100%
+  );
 }
