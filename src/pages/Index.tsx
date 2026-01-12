@@ -23,11 +23,7 @@ const Index = () => {
       <div className="bg-gradient-primary text-primary-foreground">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="text-center mb-8 animate-fade-in">
-            <img 
-              src={logoImage} 
-              alt="Desafio 30 Dias Pedro Bahia" 
-              className="w-96 h-auto mx-auto mb-8"
-            />
+            <img src={logoImage} alt="Desafio 30 Dias Pedro Bahia" className="w-96 h-auto mx-auto mb-8" />
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Sua Transformação Começa Aqui
             </h1>
@@ -36,20 +32,11 @@ const Index = () => {
               análise de alimentos por IA e suporte comunitário
             </p>
             <div className="flex gap-4 justify-center flex-col sm:flex-row items-center">
-              <Button 
-                size="lg" 
-                onClick={() => navigate("/auth")} 
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-lg px-8 h-14 w-full sm:w-auto"
-              >
+              <Button size="lg" onClick={() => navigate("/auth")} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-lg px-8 h-14 w-full sm:w-auto">
                 <TrendingUp className="mr-2 h-5 w-5" />
                 Começar Agora
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                onClick={() => navigate("/auth")} 
-                className="border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-lg px-8 h-14 w-full sm:w-auto"
-              >
+              <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground/10 text-lg px-8 h-14 w-full sm:w-auto">
                 Já Tenho Conta
               </Button>
             </div>
@@ -197,7 +184,7 @@ const Index = () => {
                 1
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-2">Crie Sua Conta Grátis</h4>
+                <h4 className="font-bold text-lg mb-2">Crie Sua Conta </h4>
                 <p className="text-muted-foreground">
                   Cadastre-se em segundos e tenha acesso imediato a todo o conteúdo do desafio
                 </p>
@@ -252,11 +239,7 @@ const Index = () => {
             Junte-se a milhares de pessoas que já estão transformando suas vidas. 
             É gratuito e você começa agora mesmo!
           </p>
-          <Button 
-            size="lg" 
-            onClick={() => navigate("/auth")} 
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-xl px-12 h-16"
-          >
+          <Button size="lg" onClick={() => navigate("/auth")} className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-xl px-12 h-16">
             <CheckCircle2 className="mr-2 h-6 w-6" />
             Começar Minha Jornada Agora
           </Button>
