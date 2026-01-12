@@ -90,19 +90,23 @@ const Loja = () => {
   const featuredProducts = products.filter(p => p.destaque);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pt-20">
+    <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-            <ShoppingBag className="h-8 w-8 text-primary" />
-            Loja de Produtos
-          </h1>
-          <p className="text-muted-foreground">
-            Produtos recomendados para sua jornada fitness
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 rounded-2xl bg-gradient-primary shadow-glow">
+              <ShoppingBag className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Loja de Produtos</h1>
+              <p className="text-sm text-muted-foreground">
+                Produtos recomendados para sua jornada fitness
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Featured Products */}
@@ -114,7 +118,7 @@ const Loja = () => {
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {featuredProducts.map(product => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all border-primary/20">
+                <Card key={product.id} className="overflow-hidden shadow-subtle hover:shadow-card transition-all duration-300 border-0 bg-card border-primary/20">
                   <div className="aspect-video bg-muted relative overflow-hidden">
                     {product.imagem_url ? (
                       <img 
@@ -206,7 +210,7 @@ const Loja = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map(product => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all">
+              <Card key={product.id} className="overflow-hidden shadow-subtle hover:shadow-card transition-all duration-300 border-0 bg-card">
                 <div className="aspect-video bg-muted relative overflow-hidden">
                   {product.imagem_url ? (
                     <img 

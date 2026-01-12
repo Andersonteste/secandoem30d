@@ -276,50 +276,57 @@ const Dashboard = () => {
     };
     return level ? levels[level] : "";
   };
-  return <div className="min-h-screen bg-background pb-20 md:pt-20">
+  return <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
       <Navigation />
       {/* App Tour */}
       <AppTour run={runTour} onComplete={handleTourComplete} />
       
       {/* Header */}
-      <header data-tour="header" className="text-white px-4 shadow-glow relative" style={{
-      paddingTop: 'max(env(safe-area-inset-top, 0px), 24px)',
-      paddingBottom: '10px',
-      minHeight: '120px',
-      background: 'linear-gradient(90deg, #ff8a00, #00ff88)',
-      borderRadius: '0 0 18px 18px'
-    }}>
-        <div className="max-w-6xl mx-auto h-full flex items-center justify-between">
-          <div className="flex flex-col gap-1 relative z-10">
-            <h1 className="font-bold text-[18px] text-white m-0 relative z-10">
+      <header data-tour="header" className="relative overflow-hidden" style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 24px)',
+        paddingBottom: '24px',
+        minHeight: '140px',
+      }}>
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-hero" />
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
+        
+        <div className="relative max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <h1 className="font-bold text-xl text-white drop-shadow-sm">
               {(() => {
-              const hour = new Date().getHours();
-              const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-              const userName = profile?.display_name || 'Atleta';
-              return `${greeting}, ${userName}!`;
-            })()}
+                const hour = new Date().getHours();
+                const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+                const userName = profile?.display_name || 'Atleta';
+                return `${greeting}, ${userName}!`;
+              })()}
             </h1>
-            <p className="text-[14px] m-0 relative z-10" style={{
-            color: 'rgba(255,255,255,0.85)'
-          }}>
-              Você está no dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} do desafio. Continue firme! 💪
+            <p className="text-sm text-white/90">
+              Dia {completedDays.length > 0 ? Math.max(...completedDays) : selectedDay} do desafio. Continue firme! 💪
             </p>
-            <p className="text-[13px] m-0 relative z-10" style={{
-            color: '#ddd'
-          }}>Desafio de 30 Dias</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
+                🔥 Desafio de 30 Dias
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-white hover:bg-white/20" title="Progresso Detalhado">
-              <TrendingUp className="h-6 w-6" />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/profile")} className="text-white hover:bg-white/20 rounded-xl" title="Progresso Detalhado">
+              <TrendingUp className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-white hover:bg-white/20">
+            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="text-white hover:bg-white/20 rounded-xl">
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-white hover:bg-white/20">
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-white hover:bg-white/20 rounded-xl">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
+        
+        {/* Bottom curve */}
+        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-surface" style={{ borderRadius: '100% 100% 0 0' }} />
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -327,25 +334,28 @@ const Dashboard = () => {
         <BannerCarousel />
 
         {/* Weight Progress */}
-        {weightProgress && <Card data-tour="weight-progress" className="p-4 sm:p-6 mb-6 shadow-glow border-primary/20" style={{
-        background: 'linear-gradient(135deg, #2a1810 0%, #1a0f0a 100%)'
+        {weightProgress && <Card data-tour="weight-progress" className="p-5 sm:p-6 mb-6 shadow-elevated border-0 overflow-hidden relative" style={{
+        background: 'linear-gradient(135deg, hsl(20, 30%, 12%) 0%, hsl(20, 25%, 8%) 100%)'
       }}>
-            <div className="flex flex-row items-center gap-4 sm:gap-6">
+            {/* Decorative glow */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
+            
+            <div className="relative flex flex-row items-center gap-4 sm:gap-6">
               {/* Circular Progress */}
               <div className="flex-shrink-0">
-                <CircularProgress percentage={weightProgress.progresso_percent} size={window.innerWidth < 640 ? 110 : 140} strokeWidth={window.innerWidth < 640 ? 12 : 14} activeColor="#ff8a00" backgroundColor="rgba(255,255,255,0.1)">
+                <CircularProgress percentage={weightProgress.progresso_percent} size={window.innerWidth < 640 ? 110 : 130} strokeWidth={window.innerWidth < 640 ? 10 : 12} activeColor="hsl(25, 95%, 55%)" backgroundColor="rgba(255,255,255,0.08)">
                   <div className="text-center">
-                    <p className="sm:text-[28px] font-bold text-white drop-shadow-glow text-base">
+                    <p className="text-lg sm:text-2xl font-bold text-white">
                       {weightProgress.peso_atual.toFixed(1)}kg
                     </p>
-                    <p className="text-[11px] sm:text-[13px] text-white/70 font-medium">Peso Atual</p>
+                    <p className="text-[10px] sm:text-xs text-white/60 font-medium">Peso Atual</p>
                   </div>
                 </CircularProgress>
               </div>
               
               {/* Progress Message */}
               <div className="flex-1 text-left">
-                <p className="sm:text-[20px] text-white leading-relaxed font-medium text-xs">
+                <p className="text-sm sm:text-base text-white/90 leading-relaxed font-medium">
                   {weightProgress.mensagem}
                 </p>
               </div>
@@ -353,21 +363,23 @@ const Dashboard = () => {
           </Card>}
 
         {/* Progress Overview */}
-        <Card data-tour="challenge-progress" className="p-6 mb-8 bg-gradient-card shadow-card">
+        <Card data-tour="challenge-progress" className="p-6 mb-8 shadow-card border-0 bg-card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Seu Progresso</h2>
+            <h2 className="text-lg font-semibold">Seu Progresso</h2>
             <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-gradient">
                 {completedDays.length}/30
               </span>
-              <Button variant="outline" size="sm" onClick={resetChallenge} className="text-xs">
+              <Button variant="ghost" size="sm" onClick={resetChallenge} className="text-xs text-muted-foreground hover:text-destructive">
                 Resetar
               </Button>
             </div>
           </div>
-          <Progress value={progressPercentage} className="h-3" />
-          <p className="text-sm text-muted-foreground mt-2">
-            {30 - completedDays.length} dias restantes para completar o desafio!
+          <Progress value={progressPercentage} className="h-2.5" />
+          <p className="text-sm text-muted-foreground mt-3">
+            {30 - completedDays.length > 0 
+              ? `${30 - completedDays.length} dias restantes para completar o desafio!`
+              : "🎉 Parabéns! Você completou o desafio!"}
           </p>
         </Card>
 
@@ -406,8 +418,8 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions - Premium Section */}
-        <section className="space-y-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
+        <section className="space-y-5">
+          <h2 className="text-lg font-bold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             Ferramentas Exclusivas
           </h2>
@@ -415,17 +427,17 @@ const Dashboard = () => {
           {/* AI Tools - Featured */}
           <div data-tour="ai-tools" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card 
-              className="group p-5 cursor-pointer border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background hover:shadow-glow hover:border-primary/40 transition-all duration-300"
+              className="group p-5 cursor-pointer border-0 shadow-card bg-gradient-to-br from-primary/15 via-card to-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300"
               onClick={() => navigate("/receitas-ia")}
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-gradient-primary text-white shadow-glow group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-2xl bg-gradient-primary text-white shadow-glow group-hover:scale-110 transition-transform duration-300">
                   <ChefHat className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1 flex items-center gap-2">
                     Receitas com IA
-                    <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">NOVO</span>
+                    <span className="text-[10px] bg-gradient-primary text-white px-2 py-0.5 rounded-full animate-pulse-soft">NOVO</span>
                   </h3>
                   <p className="text-xs text-muted-foreground">Receitas personalizadas com seus ingredientes</p>
                 </div>
@@ -433,11 +445,11 @@ const Dashboard = () => {
             </Card>
             
             <Card 
-              className="group p-5 cursor-pointer border-secondary/20 bg-gradient-to-br from-secondary/10 via-background to-background hover:shadow-lg hover:border-secondary/40 transition-all duration-300"
+              className="group p-5 cursor-pointer border-0 shadow-card bg-gradient-to-br from-secondary/15 via-card to-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300"
               onClick={() => setShowPhotoAnalyzer(true)}
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-secondary text-secondary-foreground shadow-lg group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-2xl bg-gradient-secondary text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Camera className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
@@ -448,12 +460,12 @@ const Dashboard = () => {
             </Card>
             
             <Card 
-              className="group p-5 cursor-pointer border-border hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+              className="group p-5 cursor-pointer border-0 shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300"
               onClick={() => setShowSubstitutionDialog(true)}
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors">
-                  <RefreshCw className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div className="p-3 rounded-2xl bg-muted group-hover:bg-primary/10 transition-colors duration-300">
+                  <RefreshCw className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1">Substituir Alimentos</h3>
@@ -464,38 +476,46 @@ const Dashboard = () => {
           </div>
 
           {/* Secondary Actions */}
-          <div data-tour="quick-actions" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div data-tour="quick-actions" className="grid grid-cols-4 gap-2 sm:gap-3">
             <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-1.5 hover:bg-primary/5 hover:border-primary/30 transition-all" 
+              variant="ghost" 
+              className="h-20 sm:h-24 flex-col gap-2 bg-card shadow-subtle hover:shadow-card hover:bg-primary/5 rounded-2xl border-0 transition-all duration-300" 
               onClick={() => navigate("/bonus")}
             >
-              <Gift className="h-5 w-5 text-primary" />
-              <span className="text-xs">Bônus</span>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Gift className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">Bônus</span>
             </Button>
             <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-1.5 hover:bg-secondary/5 hover:border-secondary/30 transition-all" 
+              variant="ghost" 
+              className="h-20 sm:h-24 flex-col gap-2 bg-card shadow-subtle hover:shadow-card hover:bg-secondary/5 rounded-2xl border-0 transition-all duration-300" 
               onClick={() => navigate("/comunidade")}
             >
-              <Users className="h-5 w-5 text-secondary" />
-              <span className="text-xs">Comunidade</span>
+              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-secondary" />
+              </div>
+              <span className="text-xs font-medium">Comunidade</span>
             </Button>
             <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-1.5 hover:bg-primary/5 hover:border-primary/30 transition-all" 
+              variant="ghost" 
+              className="h-20 sm:h-24 flex-col gap-2 bg-card shadow-subtle hover:shadow-card hover:bg-primary/5 rounded-2xl border-0 transition-all duration-300" 
               onClick={() => navigate("/diario")}
             >
-              <BookOpen className="h-5 w-5 text-primary" />
-              <span className="text-xs">Diário</span>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">Diário</span>
             </Button>
             <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-1.5 hover:bg-secondary/5 hover:border-secondary/30 transition-all" 
+              variant="ghost" 
+              className="h-20 sm:h-24 flex-col gap-2 bg-card shadow-subtle hover:shadow-card hover:bg-secondary/5 rounded-2xl border-0 transition-all duration-300" 
               onClick={() => navigate("/loja")}
             >
-              <ShoppingBag className="h-5 w-5 text-secondary" />
-              <span className="text-xs">Loja</span>
+              <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                <ShoppingBag className="h-5 w-5 text-secondary" />
+              </div>
+              <span className="text-xs font-medium">Loja</span>
             </Button>
           </div>
         </section>

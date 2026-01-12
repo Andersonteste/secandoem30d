@@ -54,28 +54,35 @@ const Treinos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pt-20">
+    <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
       <Navigation />
-      <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
-        <div className="max-w-6xl mx-auto">
+      <header className="relative overflow-hidden py-6 px-4">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-hero" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+        
+        <div className="relative max-w-6xl mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
-            className="mb-4 text-primary-foreground hover:bg-white/20"
+            className="mb-4 text-white hover:bg-white/20 rounded-xl"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar ao Dashboard
           </Button>
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Dumbbell className="h-6 w-6" />
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
+              <Dumbbell className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Biblioteca de Treinos</h1>
-              <p className="text-sm opacity-90">Todos os treinos do desafio</p>
+              <h1 className="text-2xl font-bold text-white">Biblioteca de Treinos</h1>
+              <p className="text-sm text-white/80">Todos os treinos do desafio</p>
             </div>
           </div>
         </div>
+        
+        {/* Bottom curve */}
+        <div className="absolute bottom-0 left-0 right-0 h-5 bg-gradient-surface" style={{ borderRadius: '100% 100% 0 0' }} />
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -98,7 +105,7 @@ const Treinos = () => {
               return (
                 <Card 
                   key={workout.id} 
-                  className="p-6 bg-gradient-card shadow-card hover:shadow-glow transition-all cursor-pointer"
+                  className="p-5 shadow-subtle hover:shadow-card transition-all duration-300 cursor-pointer border-0 bg-card group"
                   onClick={() => setSelectedWorkout(workout)}
                 >
                   <div className="flex items-start justify-between mb-4">
