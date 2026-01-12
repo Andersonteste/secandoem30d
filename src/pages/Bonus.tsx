@@ -72,15 +72,19 @@ const Bonus = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pt-20">
+    <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
       <Navigation />
-      <header className="bg-gradient-primary text-primary-foreground py-6 px-4 shadow-glow">
-        <div className="max-w-6xl mx-auto">
+      <header className="relative overflow-hidden py-6 px-4">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-hero" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+        
+        <div className="relative max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Button
               variant="ghost"
               onClick={() => navigate("/dashboard")}
-              className="text-primary-foreground hover:bg-white/20"
+              className="text-white hover:bg-white/20 rounded-xl"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar ao Dashboard
@@ -89,21 +93,24 @@ const Bonus = () => {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="text-primary-foreground hover:bg-white/20"
+              className="text-white hover:bg-white/20 rounded-xl"
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <Gift className="h-6 w-6" />
+            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
+              <Gift className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Conteúdo Bônus</h1>
-              <p className="text-sm opacity-90">Materiais exclusivos para sua jornada</p>
+              <h1 className="text-2xl font-bold text-white">Conteúdo Bônus</h1>
+              <p className="text-sm text-white/80">Materiais exclusivos para sua jornada</p>
             </div>
           </div>
         </div>
+        
+        {/* Bottom curve */}
+        <div className="absolute bottom-0 left-0 right-0 h-5 bg-gradient-surface" style={{ borderRadius: '100% 100% 0 0' }} />
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -111,14 +118,14 @@ const Bonus = () => {
           {bonusPDFs.map((pdf) => (
             <Card
               key={pdf.id}
-              className="overflow-hidden hover:shadow-glow transition-all cursor-pointer group"
+              className="overflow-hidden shadow-subtle hover:shadow-card transition-all duration-300 cursor-pointer group border-0 bg-card"
               onClick={() => setSelectedPDF(pdf)}
             >
-              <div className="relative">
+              <div className="relative overflow-hidden">
                 <img 
                   src={pdf.image} 
                   alt={pdf.title}
-                  className="w-full h-[168px] object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-[168px] object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
