@@ -42,7 +42,7 @@ const Index = () => {
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-glow text-lg px-8 h-14 w-full sm:w-auto"
               >
                 <TrendingUp className="mr-2 h-5 w-5" />
-                Começar Gratuitamente
+                Começar Agora
               </Button>
               <Button 
                 size="lg" 
@@ -87,7 +87,7 @@ const Index = () => {
                 <div className="bg-gradient-primary w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-primary-foreground">
                   <ChefHat className="h-6 w-6" />
                 </div>
-                <CardTitle>Cardápios em PDF</CardTitle>
+                <CardTitle>Cardápios Completos</CardTitle>
                 <CardDescription>
                   Planos alimentares completos para cada dia, com receitas detalhadas 
                   e lista de tipos de vegetais
@@ -210,6 +210,18 @@ const Index = () => {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2">Escolha Seu Dia</h4>
+                <p className="text-muted-foreground">
+                  Navegue pelos 30 dias e acesse treinos em vídeo e cardápios completos
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="bg-gradient-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
+                3
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-2">Treine e Registre</h4>
                 <p className="text-muted-foreground">
                   Navegue pelos 30 dias e acesse treinos em vídeo e cardápios em PDF
                 </p>
