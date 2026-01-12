@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { ExternalLink, ShoppingBag, Star, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonProductCard } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 
 interface Product {
@@ -187,16 +187,7 @@ const Loja = () => {
         {loading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <Card key={i}>
-                <Skeleton className="aspect-video w-full" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
+              <SkeletonProductCard key={i} />
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
