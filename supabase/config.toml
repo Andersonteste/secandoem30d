@@ -1,1 +1,16 @@
 project_id = "yfzgxzosmeilsxjnwvej"
+
+[functions.analyze-food-photo]
+verify_jwt = false
+
+[functions.suggest-food-substitution]
+verify_jwt = false
+
+[functions.suggest-recipes-from-ingredients]
+verify_jwt = false
+
+[functions.track-affiliate-click]
+verify_jwt = false
+
+[functions.send-auth-email]
+verify_jwt = false
