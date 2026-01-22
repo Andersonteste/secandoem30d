@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Moon, Sun, Gift } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Gift, X, Loader2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { useTheme } from "next-themes";
 import bonusChas from "@/assets/bonus-chas.webp";
@@ -14,7 +14,6 @@ import bonusSucos from "@/assets/bonus-sucos.webp";
 import bonusMarmitas from "@/assets/bonus-marmitas.png";
 import bonusLowCarb from "@/assets/bonus-low-carb.png";
 import bonusListaCompras from "@/assets/bonus-lista-compras.png";
-
 const bonusPDFs = [
   {
     id: "1",
@@ -68,9 +67,23 @@ const bonusPDFs = [
 
 const Bonus = () => {
   const [selectedPDF, setSelectedPDF] = useState<typeof bonusPDFs[0] | null>(null);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
+  const handleOpenPDF = useCallback((pdf: typeof bonusPDFs[0]) => {
+    setIsIframeLoading(true);
+    setSelectedPDF(pdf);
+  }, []);
+
+  const handleClosePDF = useCallback(() => {
+    setSelectedPDF(null);
+    setIsIframeLoading(true);
+  }, []);
+
+  const handleIframeLoad = useCallback(() => {
+    setIsIframeLoading(false);
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-surface pb-24 md:pt-20">
       <Navigation />
@@ -119,12 +132,13 @@ const Bonus = () => {
             <Card
               key={pdf.id}
               className="overflow-hidden shadow-subtle hover:shadow-card transition-all duration-300 cursor-pointer group border-0 bg-card"
-              onClick={() => setSelectedPDF(pdf)}
+              onClick={() => handleOpenPDF(pdf)}
             >
               <div className="relative overflow-hidden">
                 <img 
                   src={pdf.image} 
                   alt={pdf.title}
+                  loading="lazy"
                   className="w-full h-[168px] object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -139,22 +153,45 @@ const Bonus = () => {
       </div>
 
       {/* PDF Viewer Dialog */}
-      <Dialog open={!!selectedPDF} onOpenChange={() => setSelectedPDF(null)}>
-        <DialogContent className="max-w-6xl h-[85vh] sm:h-[96vh] p-0 flex flex-col [&>button]:top-2 [&>button]:right-2 sm:[&>button]:top-4 sm:[&>button]:right-4">
-          <DialogHeader className="px-6 pt-10 sm:pt-4 pb-2 shrink-0">
-            <DialogTitle>{selectedPDF?.title}</DialogTitle>
+      <Dialog open={!!selectedPDF} onOpenChange={handleClosePDF}>
+        <DialogContent className="max-w-6xl h-[85vh] sm:h-[96vh] p-0 flex flex-col [&>button]:hidden">
+          <DialogHeader className="px-4 sm:px-6 pt-4 pb-2 shrink-0 flex flex-row items-center justify-between">
+            <DialogTitle className="text-base sm:text-lg pr-10">{selectedPDF?.title}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClosePDF}
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-10"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Fechar</span>
+            </Button>
           </DialogHeader>
-          {selectedPDF && (
-            <iframe
-              src={selectedPDF.url}
-              className="w-full flex-1 rounded-b-lg"
-              allow="autoplay"
-            />
-          )}
+          
+          <div className="relative flex-1 min-h-0">
+            {/* Loading indicator */}
+            {isIframeLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Carregando documento...</p>
+                </div>
+              </div>
+            )}
+            
+            {selectedPDF && (
+              <iframe
+                src={selectedPDF.url}
+                className="w-full h-full rounded-b-lg"
+                allow="autoplay"
+                onLoad={handleIframeLoad}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
   );
 };
 
-export default Bonus;
+export default memo(Bonus);
