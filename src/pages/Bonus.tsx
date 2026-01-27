@@ -2,11 +2,10 @@ import { useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ArrowLeft, Moon, Sun, Gift, X, Loader2, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Moon, Sun, Gift, X, Loader2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { useTheme } from "next-themes";
-import { useIsMobile } from "@/hooks/use-mobile";
 import bonusChas from "@/assets/bonus-chas.webp";
 import bonusDoces from "@/assets/bonus-doces.webp";
 import bonusReceitasFit from "@/assets/bonus-receitas-fit.webp";
@@ -19,57 +18,49 @@ const bonusPDFs = [
   {
     id: "1",
     title: "Receitas de Chás",
-    previewUrl: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview",
-    viewUrl: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/view",
+    url: "https://drive.google.com/file/d/1AdGFj_8VO69aPLAiGhnFX5_nN6Z32EJj/preview",
     image: bonusChas
   },
   {
     id: "2",
     title: "Receitas de Doces",
-    previewUrl: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview",
-    viewUrl: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/view",
+    url: "https://drive.google.com/file/d/19uNnJ5MUSk4atx4o8mXMJWeOFMw_-Leo/preview",
     image: bonusDoces
   },
   {
     id: "3",
     title: "Receitas Fit - Almoço e Jantar",
-    previewUrl: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview",
-    viewUrl: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/view",
+    url: "https://drive.google.com/file/d/1JTsloSiGxXICz4do0yjQW72eUeOOtCbY/preview",
     image: bonusReceitasFit
   },
   {
     id: "4",
     title: "Receitas de Salgados",
-    previewUrl: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview",
-    viewUrl: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/view",
+    url: "https://drive.google.com/file/d/1xyfWK_VDc9nNPpblk7IrezK7_Xaz5ojC/preview",
     image: bonusSalgados
   },
   {
     id: "5",
     title: "Receitas de Sucos",
-    previewUrl: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/preview",
-    viewUrl: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/view",
+    url: "https://drive.google.com/file/d/1Mu563GrR7yTZgpekhp2Hdb0iLgI-Doen/preview",
     image: bonusSucos
   },
   {
     id: "6",
     title: "Marmitas Fit",
-    previewUrl: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview",
-    viewUrl: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/view",
+    url: "https://drive.google.com/file/d/1bd38s7A46bEt1gHoRQcb7XvVoi5CrTTF/preview",
     image: bonusMarmitas
   },
   {
     id: "7",
     title: "+100 Receitas Low Carb",
-    previewUrl: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview",
-    viewUrl: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/view",
+    url: "https://drive.google.com/file/d/1Edb3BLRW1BXcWS4BhkP2vrmH95ZmUsBG/preview",
     image: bonusLowCarb
   },
   {
     id: "8",
     title: "Lista de Compras Fit",
-    previewUrl: "https://drive.google.com/file/d/1Qipf9oV5PR9weSroVobwhGCzgd1mQHD0/preview",
-    viewUrl: "https://drive.google.com/file/d/1Qipf9oV5PR9weSroVobwhGCzgd1mQHD0/view",
+    url: "https://drive.google.com/file/d/1Qipf9oV5PR9weSroVobwhGCzgd1mQHD0/preview",
     image: bonusListaCompras
   }
 ];
@@ -79,23 +70,11 @@ const Bonus = () => {
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const isMobile = useIsMobile();
 
   const handleOpenPDF = useCallback((pdf: typeof bonusPDFs[0]) => {
-    // On mobile, open directly in new tab to avoid freezing
-    if (isMobile) {
-      window.open(pdf.viewUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
     setIsIframeLoading(true);
     setSelectedPDF(pdf);
-  }, [isMobile]);
-
-  const handleOpenInNewTab = useCallback(() => {
-    if (selectedPDF) {
-      window.open(selectedPDF.viewUrl, '_blank', 'noopener,noreferrer');
-    }
-  }, [selectedPDF]);
+  }, []);
 
   const handleClosePDF = useCallback(() => {
     setSelectedPDF(null);
@@ -173,37 +152,20 @@ const Bonus = () => {
         </div>
       </div>
 
-      {/* PDF Viewer Dialog - Desktop only */}
+      {/* PDF Viewer Dialog */}
       <Dialog open={!!selectedPDF} onOpenChange={handleClosePDF}>
-        <DialogContent className="max-w-6xl h-[96vh] p-0 flex flex-col [&>button]:hidden">
+        <DialogContent className="max-w-6xl h-[85vh] sm:h-[96vh] p-0 flex flex-col [&>button]:hidden">
           <DialogHeader className="px-4 sm:px-6 pt-4 pb-2 shrink-0 flex flex-row items-center justify-between">
-            <div className="flex-1 pr-20">
-              <DialogTitle className="text-base sm:text-lg">{selectedPDF?.title}</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Visualização do documento
-              </DialogDescription>
-            </div>
-            <div className="absolute top-3 right-3 flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleOpenInNewTab}
-                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
-                title="Abrir em nova aba"
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span className="sr-only">Abrir em nova aba</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClosePDF}
-                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Fechar</span>
-              </Button>
-            </div>
+            <DialogTitle className="text-base sm:text-lg pr-10">{selectedPDF?.title}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClosePDF}
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-10"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Fechar</span>
+            </Button>
           </DialogHeader>
           
           <div className="relative flex-1 min-h-0">
@@ -219,7 +181,7 @@ const Bonus = () => {
             
             {selectedPDF && (
               <iframe
-                src={selectedPDF.previewUrl}
+                src={selectedPDF.url}
                 className="w-full h-full rounded-b-lg"
                 allow="autoplay"
                 onLoad={handleIframeLoad}
