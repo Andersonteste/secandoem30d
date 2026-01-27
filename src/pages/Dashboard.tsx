@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -56,52 +56,68 @@ const Dashboard = () => {
     theme,
     setTheme
   } = useTheme();
+
+  // Memoized check for onboarding status
+  const checkOnboardingStatus = useCallback(async (userId: string): Promise<boolean> => {
+    try {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", userId)
+        .maybeSingle();
+      
+      return profileData?.onboarding_completed ?? false;
+    } catch {
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
+    let isMounted = true;
+    
     const checkAuth = async () => {
-      const {
-        data: {
-          session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isMounted) return;
+        
+        if (session?.user) {
+          const isOnboarded = await checkOnboardingStatus(session.user.id);
+          
+          if (!isMounted) return;
+          
+          if (!isOnboarded) {
+            navigate("/onboarding", { replace: true });
+            return;
+          }
+          setUser(session.user);
+          loadProgress(session.user.id);
+        } else {
+          navigate("/auth", { replace: true });
         }
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Check if onboarding is completed
-        const {
-          data: profile
-        } = await supabase.from("profiles").select("onboarding_completed").eq("id", session.user.id).single();
-        if (!profile?.onboarding_completed) {
-          navigate("/onboarding");
-          return;
+      } finally {
+        if (isMounted) {
+          setLoading(false);
         }
-        setUser(session.user);
-        loadProgress(session.user.id);
-      } else {
-        navigate("/auth");
       }
-      setLoading(false);
     };
+    
     checkAuth();
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Check if onboarding is completed
-        const {
-          data: profile
-        } = await supabase.from("profiles").select("onboarding_completed").eq("id", session.user.id).single();
-        if (!profile?.onboarding_completed) {
-          navigate("/onboarding");
-          return;
-        }
-        setUser(session.user);
-        loadProgress(session.user.id);
-      } else {
-        navigate("/auth");
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
+      // Only handle sign out - other auth changes are handled by checkAuth
+      if (event === 'SIGNED_OUT') {
+        navigate("/auth", { replace: true });
       }
     });
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, checkOnboardingStatus]);
   const loadProgress = async (userId: string) => {
     const {
       data,
@@ -525,4 +541,4 @@ const Dashboard = () => {
       <FoodSubstitutionDialog open={showSubstitutionDialog} onOpenChange={setShowSubstitutionDialog} meals={[]} />
     </div>;
 };
-export default Dashboard;
+export default memo(Dashboard);
