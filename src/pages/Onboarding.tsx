@@ -164,28 +164,57 @@ const Onboarding = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não encontrado");
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          age: parseInt(age),
-          weight_kg: parseFloat(weight),
-          height_cm: parseInt(height),
-          target_weight_kg: parseFloat(targetWeight),
-          goal,
-          experience_level: experienceLevel,
-          available_days: parseInt(availableDays),
-          dietary_restrictions: dietaryRestrictions.length > 0 ? dietaryRestrictions : null,
-          onboarding_completed: true
-        })
-        .eq("id", user.id);
+      // IMPORTANT: alguns usuários não têm linha na tabela profiles.
+      // update() não cria linha — então precisamos upsert() para garantir que o perfil exista.
+      const displayName =
+        (user.user_metadata as any)?.display_name ??
+        user.email?.split("@")[0] ??
+        null;
 
-      if (error) throw error;
+      const profilePayload = {
+        id: user.id,
+        display_name: displayName,
+        age: parseInt(age),
+        weight_kg: parseFloat(weight),
+        height_cm: parseInt(height),
+        target_weight_kg: parseFloat(targetWeight),
+        goal,
+        experience_level: experienceLevel,
+        available_days: parseInt(availableDays),
+        dietary_restrictions: dietaryRestrictions.length > 0 ? dietaryRestrictions : null,
+        onboarding_completed: true,
+      };
+
+      const { error: upsertError } = await supabase
+        .from("profiles")
+        .upsert(profilePayload, { onConflict: "id" });
+
+      if (upsertError) throw upsertError;
+
+      // Verifica se o perfil ficou legível (evita ficar preso no onboarding)
+      const { data: verified, error: verifyError } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (verifyError) throw verifyError;
+      if (verified?.onboarding_completed !== true) {
+        throw new Error(
+          "Perfil salvo, mas não foi possível confirmar o onboarding. Tente novamente."
+        );
+      }
 
       // Add initial weight log
-      await supabase.from("weight_logs").insert({
+      const { error: weightLogError } = await supabase.from("weight_logs").insert({
         user_id: user.id,
         weight_kg: parseFloat(weight)
       });
+
+      // Não bloqueia o usuário se o log falhar (mas mantém o onboarding completo)
+      if (weightLogError) {
+        // Silencioso para não travar o fluxo; pode ser falta de política/duplicidade.
+      }
 
       toast({
         title: "Perfil criado com sucesso!",
