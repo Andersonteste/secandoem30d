@@ -18,47 +18,80 @@ const Auth = () => {
     toast
   } = useToast();
   useEffect(() => {
+    let isMounted = true;
+
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("onboarding_completed")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (profile?.onboarding_completed) {
-          navigate("/dashboard");
-        } else {
-          navigate("/onboarding");
+      
+      if (!isMounted || !session) return;
+      
+      // Wait a bit to ensure profile trigger has completed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check if onboarding is completed with retry logic
+      const checkProfile = async (retries = 3): Promise<boolean | null> => {
+        for (let i = 0; i < retries; i++) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          
+          if (profile !== null) {
+            return profile.onboarding_completed;
+          }
+          
+          // Wait before retry
+          if (i < retries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
         }
+        return null;
+      };
+
+      const onboardingCompleted = await checkProfile();
+      
+      if (!isMounted) return;
+      
+      if (onboardingCompleted === true) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/onboarding", { replace: true });
       }
     };
 
     checkSession();
 
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("onboarding_completed")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (profile?.onboarding_completed) {
-          navigate("/dashboard");
-        } else {
-          navigate("/onboarding");
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      
+      // Only handle sign in - use setTimeout to avoid deadlock
+      if (event === 'SIGNED_IN' && session) {
+        setTimeout(() => {
+          if (!isMounted) return;
+          
+          supabase
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("id", session.user.id)
+            .maybeSingle()
+            .then(({ data: profile }) => {
+              if (!isMounted) return;
+              
+              if (profile?.onboarding_completed === true) {
+                navigate("/dashboard", { replace: true });
+              } else {
+                navigate("/onboarding", { replace: true });
+              }
+            });
+        }, 500);
       }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

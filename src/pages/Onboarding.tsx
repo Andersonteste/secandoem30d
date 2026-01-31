@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,15 +7,61 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Target, Activity, Calendar, Apple, TrendingUp, ChevronRight, ChevronLeft } from "lucide-react";
+import { Target, Activity, Calendar, Apple, TrendingUp, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if user is authenticated and if onboarding is already completed
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAuthAndOnboarding = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isMounted) return;
+        
+        if (!session?.user) {
+          navigate("/auth", { replace: true });
+          return;
+        }
+
+        // Check if onboarding is already completed
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        
+        if (!isMounted) return;
+
+        // If onboarding already completed, redirect to dashboard
+        if (profile?.onboarding_completed === true) {
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+      } finally {
+        if (isMounted) {
+          setCheckingAuth(false);
+        }
+      }
+    };
+
+    checkAuthAndOnboarding();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
   // Form data
   const [age, setAge] = useState("");
@@ -157,6 +203,18 @@ const Onboarding = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
