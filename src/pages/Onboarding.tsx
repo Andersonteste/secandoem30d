@@ -171,11 +171,13 @@ const Onboarding = () => {
         user.email?.split("@")[0] ??
         null;
 
+      const weightValue = parseFloat(weight);
+      
       const profilePayload = {
         id: user.id,
         display_name: displayName,
         age: parseInt(age),
-        weight_kg: parseFloat(weight),
+        weight_kg: weightValue,
         height_cm: parseInt(height),
         target_weight_kg: parseFloat(targetWeight),
         goal,
@@ -183,6 +185,8 @@ const Onboarding = () => {
         available_days: parseInt(availableDays),
         dietary_restrictions: dietaryRestrictions.length > 0 ? dietaryRestrictions : null,
         onboarding_completed: true,
+        // IMPORTANTE: Salvar peso inicial apenas na primeira vez
+        initial_weight_kg: weightValue,
       };
 
       const { error: upsertError } = await supabase
@@ -190,6 +194,9 @@ const Onboarding = () => {
         .upsert(profilePayload, { onConflict: "id" });
 
       if (upsertError) throw upsertError;
+
+      // Pequeno delay para garantir que o trigger do Supabase processou
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Verifica se o perfil ficou legível (evita ficar preso no onboarding)
       const { data: verified, error: verifyError } = await supabase
@@ -205,23 +212,23 @@ const Onboarding = () => {
         );
       }
 
-      // Add initial weight log
-      const { error: weightLogError } = await supabase.from("weight_logs").insert({
+      // Add initial weight log (non-blocking)
+      supabase.from("weight_logs").insert({
         user_id: user.id,
-        weight_kg: parseFloat(weight)
+        weight_kg: weightValue
+      }).then(({ error }) => {
+        if (error) {
+          console.warn("Weight log insert failed (non-blocking):", error.message);
+        }
       });
-
-      // Não bloqueia o usuário se o log falhar (mas mantém o onboarding completo)
-      if (weightLogError) {
-        // Silencioso para não travar o fluxo; pode ser falta de política/duplicidade.
-      }
 
       toast({
         title: "Perfil criado com sucesso!",
         description: "Seu programa personalizado está pronto."
       });
 
-      navigate("/dashboard");
+      // CRÍTICO: Usar replace: true para evitar travamento ao voltar
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast({
         variant: "destructive",
