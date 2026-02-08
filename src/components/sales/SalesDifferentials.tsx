@@ -14,14 +14,14 @@ const SalesDifferentials = () => {
       <div className="max-w-5xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-12">
           Por Que o Desafio 30 Dias{" "}
-          <span className="text-[hsl(45,100%,50%)]">Funciona</span>
+          <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Funciona</span>
         </h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {diffs.map((d, i) => (
             <div key={i} className="text-center group">
-              <div className="w-16 h-16 rounded-2xl bg-[hsl(45,100%,50%/0.1)] border border-[hsl(45,100%,50%/0.2)] flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(45,100%,50%/0.2)] transition-colors">
-                <d.icon className="w-7 h-7 text-[hsl(45,100%,50%)]" />
+              <div className="w-16 h-16 rounded-2xl bg-[hsl(24,100%,50%/0.1)] border border-[hsl(24,100%,50%/0.2)] flex items-center justify-center mx-auto mb-4 group-hover:bg-[hsl(24,100%,50%/0.2)] transition-colors">
+                <d.icon className="w-7 h-7 text-[hsl(24,100%,50%)]" />
               </div>
               <h3 className="font-bold mb-1">{d.title}</h3>
               <p className="text-white/50 text-sm">{d.desc}</p>

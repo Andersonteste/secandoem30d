@@ -53,7 +53,7 @@ const SalesResults = () => {
     <section className="bg-[hsl(0,0%,8%)] text-white py-16 md:py-24">
       <div className="max-w-6xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">
-          Resultados <span className="text-[hsl(45,100%,50%)]">Reais</span> de Quem Seguiu o Método
+          Resultados <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Reais</span> de Quem Seguiu o Método
         </h2>
         <p className="text-center text-white/60 mb-12 max-w-2xl mx-auto">
           Pessoas comuns que decidiram começar e mantiveram a constância.
@@ -62,17 +62,16 @@ const SalesResults = () => {
 
         {/* Carousel */}
         <div className="relative">
-          {/* Arrows */}
           <button
             onClick={scrollPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[hsl(0,0%,5%/0.8)] border border-white/20 flex items-center justify-center hover:bg-[hsl(45,100%,50%)] hover:text-[hsl(0,0%,5%)] transition-colors -translate-x-1/2 md:-translate-x-5"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[hsl(0,0%,5%/0.8)] border border-white/20 flex items-center justify-center hover:bg-[hsl(24,100%,50%)] hover:text-white transition-colors -translate-x-1/2 md:-translate-x-5"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[hsl(0,0%,5%/0.8)] border border-white/20 flex items-center justify-center hover:bg-[hsl(45,100%,50%)] hover:text-[hsl(0,0%,5%)] transition-colors translate-x-1/2 md:translate-x-5"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[hsl(0,0%,5%/0.8)] border border-white/20 flex items-center justify-center hover:bg-[hsl(24,100%,50%)] hover:text-white transition-colors translate-x-1/2 md:translate-x-5"
             aria-label="Próximo"
           >
             <ChevronRight className="w-5 h-5" />
@@ -85,7 +84,7 @@ const SalesResults = () => {
                   key={i}
                   className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] min-w-0 px-2"
                 >
-                  <div className="rounded-xl overflow-hidden border-2 border-[hsl(45,100%,50%/0.3)] hover:border-[hsl(45,100%,50%)] transition-all duration-300">
+                  <div className="rounded-xl overflow-hidden border-2 border-[hsl(24,100%,50%/0.3)] hover:border-[hsl(24,100%,50%)] transition-all duration-300">
                     <img
                       src={r.src}
                       alt={r.alt}
@@ -106,7 +105,7 @@ const SalesResults = () => {
                 onClick={() => emblaApi?.scrollTo(i)}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${
                   i === selectedIndex
-                    ? "bg-[hsl(45,100%,50%)] w-6"
+                    ? "bg-[hsl(24,100%,50%)] w-6"
                     : "bg-white/30 hover:bg-white/50"
                 }`}
                 aria-label={`Ir para resultado ${i + 1}`}
@@ -125,7 +124,7 @@ const SalesResults = () => {
             href={CHECKOUT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center bg-[hsl(45,100%,50%)] hover:bg-[hsl(45,100%,55%)] text-[hsl(0,0%,5%)] text-lg font-extrabold px-10 py-5 rounded-xl transition-all duration-300 shadow-[0_0_30px_hsl(45,100%,50%/0.4)] hover:shadow-[0_0_40px_hsl(45,100%,50%/0.6)] hover:scale-105"
+            className="inline-flex items-center justify-center bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(30,100%,45%)] hover:from-[hsl(24,100%,55%)] hover:to-[hsl(30,100%,50%)] text-white text-lg font-extrabold px-10 py-5 rounded-xl transition-all duration-300 shadow-[0_0_30px_hsl(24,100%,50%/0.4)] hover:shadow-[0_0_40px_hsl(24,100%,50%/0.6)] hover:scale-105"
           >
             QUERO COMEÇAR MINHA TRANSFORMAÇÃO
           </a>
