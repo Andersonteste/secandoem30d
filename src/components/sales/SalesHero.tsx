@@ -6,10 +6,10 @@ const SalesHero = () => {
   return (
     <section className="relative overflow-hidden bg-[hsl(0,0%,5%)] text-white">
       {/* Accent line top */}
-      <div className="h-1 w-full bg-gradient-to-r from-[hsl(45,100%,50%)] via-[hsl(40,100%,55%)] to-[hsl(45,100%,50%)]" />
+      <div className="h-1 w-full bg-gradient-to-r from-[hsl(24,100%,50%)] via-[hsl(100,100%,55%)] to-[hsl(24,100%,50%)]" />
 
       {/* Background subtle radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right,hsl(45,100%,50%,0.06),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(24,100%,50%,0.06),transparent_70%)]" />
 
       <div className="relative max-w-3xl mx-auto px-4 py-12 md:py-20 text-center">
           {/* Logo */}
@@ -22,7 +22,7 @@ const SalesHero = () => {
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.1] mb-6">
             Transforme Seu Corpo em{" "}
-            <span className="text-[hsl(45,100%,50%)]">30 Dias</span>{" "}
+            <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">30 Dias</span>{" "}
             Treinando em Casa
           </h1>
 
@@ -35,7 +35,7 @@ const SalesHero = () => {
             href={CHECKOUT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-[hsl(45,100%,50%)] hover:bg-[hsl(45,100%,55%)] text-[hsl(0,0%,5%)] text-lg md:text-xl font-extrabold px-10 py-5 rounded-xl transition-all duration-300 shadow-[0_0_30px_hsl(45,100%,50%/0.4)] hover:shadow-[0_0_40px_hsl(45,100%,50%/0.6)] hover:scale-105 w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(30,100%,45%)] hover:from-[hsl(24,100%,55%)] hover:to-[hsl(30,100%,50%)] text-white text-lg md:text-xl font-extrabold px-10 py-5 rounded-xl transition-all duration-300 shadow-[0_0_30px_hsl(24,100%,50%/0.4)] hover:shadow-[0_0_40px_hsl(24,100%,50%/0.6)] hover:scale-105 w-full sm:w-auto"
           >
             QUERO ENTRAR NO DESAFIO 30 DIAS
           </a>

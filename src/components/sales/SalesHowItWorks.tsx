@@ -26,7 +26,7 @@ const SalesHowItWorks = () => {
     <section className="bg-[hsl(0,0%,8%)] text-white py-16 md:py-24">
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">
-          Como <span className="text-[hsl(45,100%,50%)]">Funciona</span>
+          Como <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Funciona</span>
         </h2>
         <p className="text-center text-white/60 mb-12 text-lg">
           Em 3 passos simples você já está dentro do desafio.
@@ -36,13 +36,13 @@ const SalesHowItWorks = () => {
           {steps.map((s, i) => (
             <div
               key={i}
-              className="flex-1 relative bg-white/5 border border-white/10 rounded-2xl p-8 text-center group hover:border-[hsl(45,100%,50%/0.5)] transition-all duration-300"
+              className="flex-1 relative bg-white/5 border border-white/10 rounded-2xl p-8 text-center group hover:border-[hsl(24,100%,50%/0.5)] transition-all duration-300"
             >
-              <span className="text-5xl font-black text-[hsl(45,100%,50%/0.15)] absolute top-4 right-4 group-hover:text-[hsl(45,100%,50%/0.3)] transition-colors">
+              <span className="text-5xl font-black text-[hsl(24,100%,50%/0.15)] absolute top-4 right-4 group-hover:text-[hsl(24,100%,50%/0.3)] transition-colors">
                 {s.num}
               </span>
-              <div className="w-16 h-16 rounded-full bg-[hsl(45,100%,50%)] flex items-center justify-center mx-auto mb-4">
-                <s.icon className="w-8 h-8 text-[hsl(0,0%,5%)]" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[hsl(24,100%,50%)] to-[hsl(145,100%,45%)] flex items-center justify-center mx-auto mb-4">
+                <s.icon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-bold mb-2">{s.title}</h3>
               <p className="text-white/60">{s.desc}</p>
