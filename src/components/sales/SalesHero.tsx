@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import logoDesafio from "@/assets/sales/logo-desafio-30.png";
 
 const CHECKOUT_URL = "https://pay.kiwify.com.br/0DZqpCK";
@@ -43,6 +44,13 @@ const SalesHero = () => {
           <p className="text-white/40 text-sm mt-4">
             Acesso imediato após a compra
           </p>
+
+          <Link
+            to="/auth"
+            className="inline-block text-white/50 hover:text-white/80 text-sm mt-6 underline underline-offset-4 transition-colors"
+          >
+            Já tenho uma conta — Entrar
+          </Link>
       </div>
     </section>
   );
