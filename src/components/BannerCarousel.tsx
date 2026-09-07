@@ -23,7 +23,7 @@ export const BannerCarousel = () => {
   const [loading, setLoading] = useState(true);
   const [api, setApi] = useState<CarouselApi>();
   const { toast } = useToast();
-  const autoplayRef = useRef<NodeJS.Timeout>();
+  const autoplayRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     loadBanners();
