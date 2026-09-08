@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SkeletonBonusCard } from "@/components/ui/skeleton-presets";
+import { SkeletonBonusCard } from "@/components/ui/skeleton";
 import { BookOpen, Search, FileText, Video, ExternalLink, Loader2 } from "lucide-react";
 
 const TYPE_ICON: Record<string, any> = { pdf: FileText, video: Video, guia: BookOpen, aula: Video, lista: FileText };
