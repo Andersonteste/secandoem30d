@@ -14,11 +14,11 @@ const features = [
   {
     icon: Scale,
     title: "Registro de Peso e Evolução",
-    desc: "Acompanhe sua evolução registrando seu peso e vendo seu progresso ao longo dos 30 dias.",
+    desc: "Acompanhe sua evolução registrando seu peso e vendo seu progresso semana a semana.",
   },
   {
     icon: CalendarCheck,
-    title: "Acompanhamento de 30 Dias",
+    title: "Acompanhamento Diário",
     desc: "Marque cada dia completo, acompanhe suas metas e mantenha a constância.",
   },
   {

@@ -17,10 +17,10 @@ const SalesForWho = () => {
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">
           Para Quem É o{" "}
-          <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Desafio 30 Dias</span>?
+          <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Secando em Casa</span>?
         </h2>
         <p className="text-center text-white/60 mb-12 text-lg">
-          Se você se identifica com algum dos itens abaixo, esse desafio foi feito pra você.
+          Se você se identifica com algum dos itens abaixo, a plataforma foi feita pra você.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-4">

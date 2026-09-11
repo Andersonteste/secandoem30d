@@ -13,7 +13,7 @@ const SalesDifferentials = () => {
     <section className="bg-[hsl(0,0%,8%)] text-white py-16 md:py-24">
       <div className="max-w-5xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-12">
-          Por Que o Desafio 30 Dias{" "}
+          Por Que o Secando em Casa{" "}
           <span className="bg-gradient-to-r from-[hsl(24,100%,50%)] to-[hsl(145,100%,55%)] bg-clip-text text-transparent">Funciona</span>
         </h2>
 
