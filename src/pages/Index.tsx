@@ -23,7 +23,7 @@ const Index = () => {
       <div className="bg-gradient-primary text-primary-foreground">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="text-center mb-8 animate-fade-in">
-            <img src={logoImage} alt="Desafio 30 Dias Pedro Bahia" className="w-96 h-auto mx-auto mb-8" />
+            <img src={logoImage} alt="Secando em Casa" className="w-96 h-auto mx-auto mb-8" />
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Sua Transformação Começa Aqui
             </h1>
