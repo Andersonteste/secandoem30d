@@ -17,3 +17,15 @@ verify_jwt = false
 
 [functions.generate-recipe-image]
 verify_jwt = false
+
+[functions.subscription-webhook]
+verify_jwt = false
+
+[functions.evolution-webhook]
+verify_jwt = false
+
+[functions.evolution-connect]
+verify_jwt = false
+
+[functions.whatsapp-send]
+verify_jwt = false

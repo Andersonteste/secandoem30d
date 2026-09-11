@@ -4,12 +4,59 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Target, Activity, Calendar, Apple, TrendingUp, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { BRAND, EQUIPMENT_OPTIONS } from "@/lib/brand";
+import {
+  Target, Activity, Calendar, Apple, TrendingUp, ChevronRight, ChevronLeft,
+  Loader2, Home, Moon, HeartPulse, Dumbbell,
+} from "lucide-react";
+
+const goalOptions = [
+  { value: "lose_weight", label: "Emagrecer", icon: TrendingUp },
+  { value: "gain_muscle", label: "Ganhar massa", icon: Dumbbell },
+  { value: "maintain", label: "Manter peso", icon: Target },
+  { value: "get_fit", label: "Melhorar condicionamento", icon: Activity },
+];
+
+const locationOptions = [
+  { value: "casa", label: "Em casa", desc: "Treinos sem depender de academia" },
+  { value: "academia", label: "Na academia", desc: "Acesso a máquinas e pesos" },
+  { value: "ambos", label: "Casa e academia", desc: "Quero as duas opções" },
+];
+
+const experienceOptions = [
+  { value: "beginner", label: "Iniciante", desc: "Pouca ou nenhuma experiência" },
+  { value: "intermediate", label: "Intermediário", desc: "Alguma experiência com treinos" },
+  { value: "advanced", label: "Avançado", desc: "Experiência significativa" },
+];
+
+const sessionOptions = [
+  { value: "15", label: "15 min" },
+  { value: "30", label: "30 min" },
+  { value: "45", label: "45 min" },
+  { value: "60", label: "60 min ou mais" },
+];
+
+const dietaryOptions = [
+  { value: "vegetarian", label: "Vegetariano" },
+  { value: "vegan", label: "Vegano" },
+  { value: "lactose_free", label: "Intolerante à lactose" },
+  { value: "gluten_free", label: "Sem glúten" },
+];
+
+const sleepOptions = [
+  { value: "ruim", label: "Ruim" },
+  { value: "regular", label: "Regular" },
+  { value: "boa", label: "Boa" },
+  { value: "otima", label: "Ótima" },
+];
+
+const TOTAL_STEPS = 7;
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
@@ -18,236 +65,121 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if user is authenticated and if onboarding is already completed
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkAuthAndOnboarding = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!isMounted) return;
-        
-        if (!session?.user) {
-          navigate("/auth", { replace: true });
-          return;
-        }
-
-        // Check if onboarding is already completed
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("onboarding_completed")
-          .eq("id", session.user.id)
-          .maybeSingle();
-        
-        if (!isMounted) return;
-
-        // If onboarding already completed, redirect to dashboard
-        if (profile?.onboarding_completed === true) {
-          navigate("/dashboard", { replace: true });
-          return;
-        }
-      } catch (error) {
-        console.error("Error checking auth:", error);
-      } finally {
-        if (isMounted) {
-          setCheckingAuth(false);
-        }
-      }
-    };
-
-    checkAuthAndOnboarding();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [navigate]);
-
-  // Form data
+  const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
   const [goal, setGoal] = useState("");
+  const [trainingLocation, setTrainingLocation] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
   const [availableDays, setAvailableDays] = useState("");
+  const [sessionMinutes, setSessionMinutes] = useState("");
+  const [equipment, setEquipment] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [foodPreferences, setFoodPreferences] = useState("");
+  const [sleepQuality, setSleepQuality] = useState("");
+  const [limitations, setLimitations] = useState("");
+  const [phone, setPhone] = useState("");
 
-  const totalSteps = 5;
-  const progress = (step / totalSteps) * 100;
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!isMounted) return;
+        if (!user) {
+          navigate("/auth", { replace: true });
+          return;
+        }
+        setName(((user.user_metadata as any)?.display_name ?? user.email?.split("@")[0] ?? "") as string);
 
-  const goalOptions = [
-    { value: "lose_weight", label: "Perder Peso", icon: TrendingUp },
-    { value: "gain_muscle", label: "Ganhar Massa Muscular", icon: Activity },
-    { value: "get_fit", label: "Ficar em Forma", icon: Target },
-    { value: "maintain", label: "Manter Peso Atual", icon: Target }
-  ];
+        const { data: profile } = await supabase
+          .from("profiles").select("onboarding_completed").eq("id", user.id).maybeSingle();
+        if (!isMounted) return;
+        if (profile?.onboarding_completed === true) {
+          navigate("/hoje", { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+      } finally {
+        if (isMounted) setCheckingAuth(false);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, [navigate]);
 
-  const experienceOptions = [
-    { value: "beginner", label: "Iniciante", desc: "Pouca ou nenhuma experiência" },
-    { value: "intermediate", label: "Intermediário", desc: "Alguma experiência com treinos" },
-    { value: "advanced", label: "Avançado", desc: "Experiência significativa" }
-  ];
+  const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {
+    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+  };
 
-  const dietaryOptions = [
-    { value: "vegetarian", label: "Vegetariano" },
-    { value: "vegan", label: "Vegano" },
-    { value: "lactose_intolerant", label: "Intolerante à Lactose" },
-    { value: "gluten_free", label: "Sem Glúten" },
-    { value: "none", label: "Nenhuma restrição" }
-  ];
-
-  const handleDietaryChange = (value: string) => {
-    if (value === "none") {
-      setDietaryRestrictions([]);
-    } else {
-      setDietaryRestrictions(prev => 
-        prev.includes(value) 
-          ? prev.filter(item => item !== value)
-          : [...prev.filter(item => item !== "none"), value]
-      );
-    }
+  const invalid = () => {
+    if (step === 1 && (!name || !age || !weight || !height)) return "Preencha nome, idade, peso e altura.";
+    if (step === 2 && !goal) return "Escolha seu objetivo principal.";
+    if (step === 3 && !targetWeight) return "Defina sua meta de peso.";
+    if (step === 4 && !trainingLocation) return "Informe onde você vai treinar.";
+    if (step === 5 && (!experienceLevel || !availableDays || !sessionMinutes)) return "Complete nível, dias e tempo de treino.";
+    return null;
   };
 
   const handleNext = () => {
-    if (step === 1 && (!age || !weight || !height)) {
-      toast({
-        variant: "destructive",
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos."
-      });
-      return;
-    }
-    if (step === 2 && !goal) {
-      toast({
-        variant: "destructive",
-        title: "Selecione um objetivo",
-        description: "Por favor, escolha seu objetivo principal."
-      });
-      return;
-    }
-    if (step === 3 && !targetWeight) {
-      toast({
-        variant: "destructive",
-        title: "Meta de peso",
-        description: "Por favor, defina sua meta de peso."
-      });
-      return;
-    }
-    if (step === 4 && !experienceLevel) {
-      toast({
-        variant: "destructive",
-        title: "Nível de experiência",
-        description: "Por favor, selecione seu nível de experiência."
-      });
+    const err = invalid();
+    if (err) {
+      toast({ variant: "destructive", title: "Falta preencher", description: err });
       return;
     }
     setStep(step + 1);
   };
 
-  const handleBack = () => {
-    setStep(step - 1);
-  };
-
   const handleComplete = async () => {
-    if (!availableDays) {
-      toast({
-        variant: "destructive",
-        title: "Dias disponíveis",
-        description: "Por favor, informe quantos dias pode treinar."
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não encontrado");
 
-      // IMPORTANT: alguns usuários não têm linha na tabela profiles.
-      // update() não cria linha — então precisamos upsert() para garantir que o perfil exista.
-      const displayName =
-        (user.user_metadata as any)?.display_name ??
-        user.email?.split("@")[0] ??
-        null;
-
       const weightValue = parseFloat(weight);
-      
-      const profilePayload = {
+      const payload = {
         id: user.id,
-        display_name: displayName,
+        display_name: name,
         age: parseInt(age),
         weight_kg: weightValue,
         height_cm: parseInt(height),
         target_weight_kg: parseFloat(targetWeight),
         goal,
+        training_location: trainingLocation,
         experience_level: experienceLevel,
         available_days: parseInt(availableDays),
-        dietary_restrictions: dietaryRestrictions.length > 0 ? dietaryRestrictions : null,
+        session_minutes: parseInt(sessionMinutes),
+        equipment: equipment.length ? equipment : null,
+        dietary_restrictions: dietaryRestrictions.length ? dietaryRestrictions : null,
+        food_preferences: foodPreferences ? foodPreferences.split(",").map((s) => s.trim()).filter(Boolean) : null,
+        sleep_quality: sleepQuality || null,
+        physical_limitations: limitations || null,
+        phone: phone || null,
         onboarding_completed: true,
-        // IMPORTANTE: Salvar peso inicial apenas na primeira vez
         initial_weight_kg: weightValue,
       };
 
-      const { error: upsertError } = await supabase
-        .from("profiles")
-        .upsert(profilePayload, { onConflict: "id" });
+      const { error } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
+      if (error) throw error;
 
-      if (upsertError) throw upsertError;
+      supabase.from("weight_logs").insert({ user_id: user.id, weight_kg: weightValue })
+        .then(({ error: e }) => { if (e) console.warn("weight log:", e.message); });
 
-      // Pequeno delay para garantir que o trigger do Supabase processou
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // Verifica se o perfil ficou legível (evita ficar preso no onboarding)
-      const { data: verified, error: verifyError } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (verifyError) throw verifyError;
-      if (verified?.onboarding_completed !== true) {
-        throw new Error(
-          "Perfil salvo, mas não foi possível confirmar o onboarding. Tente novamente."
-        );
-      }
-
-      // Add initial weight log (non-blocking)
-      supabase.from("weight_logs").insert({
-        user_id: user.id,
-        weight_kg: weightValue
-      }).then(({ error }) => {
-        if (error) {
-          console.warn("Weight log insert failed (non-blocking):", error.message);
-        }
-      });
-
-      toast({
-        title: "Perfil criado com sucesso!",
-        description: "Seu programa personalizado está pronto."
-      });
-
-      // CRÍTICO: Usar replace: true para evitar travamento ao voltar
-      navigate("/dashboard", { replace: true });
+      toast({ title: "Tudo pronto!", description: "Seu plano personalizado já está disponível." });
+      navigate("/hoje", { replace: true });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: error.message
-      });
+      toast({ variant: "destructive", title: "Erro", description: error.message });
     } finally {
       setLoading(false);
     }
   };
 
-  // Show loading while checking auth
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -255,86 +187,44 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl animate-fade-in">
-        <CardContent className="p-8">
+        <CardContent className="p-6 sm:p-8">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-              Vamos Personalizar Seu Programa
-            </h1>
-            <p className="text-muted-foreground">
-              Passo {step} de {totalSteps}
-            </p>
-            <Progress value={progress} className="mt-4" />
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1">Vamos montar seu plano</h1>
+            <p className="text-muted-foreground text-sm">{BRAND.tagline}</p>
+            <p className="text-muted-foreground text-sm mt-2">Passo {step} de {TOTAL_STEPS}</p>
+            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3" />
           </div>
 
-          {/* Step 1: Basic Info */}
           {step === 1 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold">Informações Básicas</h2>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="age">Idade</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder="Ex: 25"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  min="15"
-                  max="100"
-                />
-              </div>
-
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Activity className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Seus dados</h2></div>
+              <div className="space-y-2"><Label>Como podemos te chamar?</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" /></div>
+              <div className="space-y-2"><Label>Idade</Label>
+                <Input type="number" min="15" max="100" value={age} onChange={(e) => setAge(e.target.value)} placeholder="Ex: 32" /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Peso Atual (kg)</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    step="0.1"
-                    placeholder="Ex: 70.5"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="height">Altura (cm)</Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    placeholder="Ex: 175"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                  />
-                </div>
+                <div className="space-y-2"><Label>Peso atual (kg)</Label>
+                  <Input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Ex: 78.5" /></div>
+                <div className="space-y-2"><Label>Altura (cm)</Label>
+                  <Input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="Ex: 172" /></div>
               </div>
+              <div className="space-y-2"><Label>WhatsApp (opcional)</Label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Ex: 71999999999" />
+                <p className="text-xs text-muted-foreground">Usado para ligar seu atendimento ao seu plano.</p></div>
             </div>
           )}
 
-          {/* Step 2: Goal Selection */}
           {step === 2 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold">Qual é o Seu Objetivo?</h2>
-              </div>
-
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Seu objetivo</h2></div>
               <RadioGroup value={goal} onValueChange={setGoal}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {goalOptions.map((option) => (
-                    <Label
-                      key={option.value}
-                      htmlFor={option.value}
-                      className={`flex items-center space-x-3 border rounded-lg p-4 cursor-pointer transition-all ${
-                        goal === option.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <option.icon className="h-5 w-5 text-primary" />
-                      <span className="font-medium">{option.label}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {goalOptions.map((o) => (
+                    <Label key={o.value} htmlFor={`goal-${o.value}`}
+                      className={`flex items-center gap-3 border rounded-lg p-4 cursor-pointer transition-all ${goal === o.value ? "border-primary bg-primary/5" : "hover:border-primary/50"}`}>
+                      <RadioGroupItem value={o.value} id={`goal-${o.value}`} />
+                      <o.icon className="h-5 w-5 text-primary" />
+                      <span className="font-medium">{o.label}</span>
                     </Label>
                   ))}
                 </div>
@@ -342,102 +232,39 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Step 3: Target Weight */}
           {step === 3 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold">Meta de Peso</h2>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="targetWeight">Qual é o seu peso ideal? (kg)</Label>
-                <Input
-                  id="targetWeight"
-                  type="number"
-                  step="0.1"
-                  placeholder="Ex: 65.0"
-                  value={targetWeight}
-                  onChange={(e) => setTargetWeight(e.target.value)}
-                />
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Sua meta</h2></div>
+              <div className="space-y-2"><Label>Peso ou meta desejada (kg)</Label>
+                <Input type="number" step="0.1" value={targetWeight} onChange={(e) => setTargetWeight(e.target.value)} placeholder="Ex: 70" />
                 <p className="text-sm text-muted-foreground">
-                  Peso atual: {weight}kg | Diferença: {weight && targetWeight ? Math.abs(parseFloat(weight) - parseFloat(targetWeight)).toFixed(1) : "0"}kg
-                </p>
-              </div>
+                  Peso atual: {weight || "—"} kg · Diferença: {weight && targetWeight ? Math.abs(parseFloat(weight) - parseFloat(targetWeight)).toFixed(1) : "0"} kg
+                </p></div>
             </div>
           )}
 
-          {/* Step 4: Experience Level */}
           {step === 4 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold">Nível de Experiência</h2>
-              </div>
-
-              <RadioGroup value={experienceLevel} onValueChange={setExperienceLevel}>
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Home className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Onde você vai treinar</h2></div>
+              <RadioGroup value={trainingLocation} onValueChange={setTrainingLocation}>
                 <div className="space-y-3">
-                  {experienceOptions.map((option) => (
-                    <Label
-                      key={option.value}
-                      htmlFor={option.value}
-                      className={`flex items-start space-x-3 border rounded-lg p-4 cursor-pointer transition-all ${
-                        experienceLevel === option.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                      <div>
-                        <div className="font-medium">{option.label}</div>
-                        <div className="text-sm text-muted-foreground">{option.desc}</div>
-                      </div>
+                  {locationOptions.map((o) => (
+                    <Label key={o.value} htmlFor={`loc-${o.value}`}
+                      className={`flex items-start gap-3 border rounded-lg p-4 cursor-pointer transition-all ${trainingLocation === o.value ? "border-primary bg-primary/5" : "hover:border-primary/50"}`}>
+                      <RadioGroupItem value={o.value} id={`loc-${o.value}`} className="mt-1" />
+                      <div><div className="font-medium">{o.label}</div><div className="text-sm text-muted-foreground">{o.desc}</div></div>
                     </Label>
                   ))}
                 </div>
               </RadioGroup>
-            </div>
-          )}
-
-          {/* Step 5: Schedule & Diet */}
-          {step === 5 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold">Disponibilidade e Dieta</h2>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="availableDays">Quantos dias por semana pode treinar?</Label>
-                <Input
-                  id="availableDays"
-                  type="number"
-                  placeholder="Ex: 5"
-                  value={availableDays}
-                  onChange={(e) => setAvailableDays(e.target.value)}
-                  min="1"
-                  max="7"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Apple className="h-5 w-5 text-primary" />
-                  <Label>Restrições Alimentares</Label>
-                </div>
-                <div className="space-y-2">
-                  {dietaryOptions.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={option.value}
-                        checked={
-                          option.value === "none" 
-                            ? dietaryRestrictions.length === 0 
-                            : dietaryRestrictions.includes(option.value)
-                        }
-                        onCheckedChange={() => handleDietaryChange(option.value)}
-                      />
-                      <Label htmlFor={option.value} className="cursor-pointer">
-                        {option.label}
-                      </Label>
+                <Label>Equipamentos disponíveis</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {EQUIPMENT_OPTIONS.map((o) => (
+                    <div key={o.value} className="flex items-center gap-2">
+                      <Checkbox id={`eq-${o.value}`} checked={equipment.includes(o.value)}
+                        onCheckedChange={() => toggle(equipment, setEquipment, o.value)} />
+                      <Label htmlFor={`eq-${o.value}`} className="cursor-pointer text-sm">{o.label}</Label>
                     </div>
                   ))}
                 </div>
@@ -445,34 +272,89 @@ const Onboarding = () => {
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8">
+          {step === 5 && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Sua rotina de treino</h2></div>
+              <RadioGroup value={experienceLevel} onValueChange={setExperienceLevel}>
+                <div className="space-y-3">
+                  {experienceOptions.map((o) => (
+                    <Label key={o.value} htmlFor={`lvl-${o.value}`}
+                      className={`flex items-start gap-3 border rounded-lg p-4 cursor-pointer transition-all ${experienceLevel === o.value ? "border-primary bg-primary/5" : "hover:border-primary/50"}`}>
+                      <RadioGroupItem value={o.value} id={`lvl-${o.value}`} className="mt-1" />
+                      <div><div className="font-medium">{o.label}</div><div className="text-sm text-muted-foreground">{o.desc}</div></div>
+                    </Label>
+                  ))}
+                </div>
+              </RadioGroup>
+              <div className="space-y-2"><Label>Dias disponíveis por semana</Label>
+                <Input type="number" min="1" max="7" value={availableDays} onChange={(e) => setAvailableDays(e.target.value)} placeholder="Ex: 4" /></div>
+              <div className="space-y-2"><Label>Tempo por treino</Label>
+                <div className="flex flex-wrap gap-2">
+                  {sessionOptions.map((o) => (
+                    <Button key={o.value} type="button" size="sm"
+                      variant={sessionMinutes === o.value ? "default" : "outline"}
+                      onClick={() => setSessionMinutes(o.value)}>{o.label}</Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 6 && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Apple className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Alimentação</h2></div>
+              <div className="space-y-2">
+                <Label>Restrições alimentares</Label>
+                {dietaryOptions.map((o) => (
+                  <div key={o.value} className="flex items-center gap-2">
+                    <Checkbox id={`diet-${o.value}`} checked={dietaryRestrictions.includes(o.value)}
+                      onCheckedChange={() => toggle(dietaryRestrictions, setDietaryRestrictions, o.value)} />
+                    <Label htmlFor={`diet-${o.value}`} className="cursor-pointer">{o.label}</Label>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2"><Label>Preferências alimentares</Label>
+                <Input value={foodPreferences} onChange={(e) => setFoodPreferences(e.target.value)} placeholder="Ex: frango, ovos, marmita, comida rápida" />
+                <p className="text-xs text-muted-foreground">Separe por vírgula. Usamos para sugerir receitas.</p></div>
+            </div>
+          )}
+
+          {step === 7 && (
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex items-center gap-2"><Moon className="h-5 w-5 text-primary" /><h2 className="text-lg font-semibold">Sono e cuidados</h2></div>
+              <div className="space-y-2"><Label>Como está seu sono hoje?</Label>
+                <div className="flex flex-wrap gap-2">
+                  {sleepOptions.map((o) => (
+                    <Button key={o.value} type="button" size="sm"
+                      variant={sleepQuality === o.value ? "default" : "outline"}
+                      onClick={() => setSleepQuality(o.value)}>{o.label}</Button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-primary" /> Limitações físicas ou dores</Label>
+                <Textarea rows={3} value={limitations} onChange={(e) => setLimitations(e.target.value)}
+                  placeholder="Ex: dor no joelho direito, hérnia lombar, nenhuma" />
+                <p className="text-xs text-muted-foreground">
+                  Usamos essa informação para evitar exercícios inadequados. Não substitui avaliação profissional.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-between mt-8 gap-3">
             {step > 1 && (
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={loading}
-              >
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Voltar
+              <Button variant="outline" onClick={() => setStep(step - 1)} disabled={loading}>
+                <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
               </Button>
             )}
-            
-            {step < totalSteps ? (
-              <Button
-                onClick={handleNext}
-                className="ml-auto bg-gradient-primary"
-              >
-                Próximo
-                <ChevronRight className="ml-2 h-4 w-4" />
+            {step < TOTAL_STEPS ? (
+              <Button onClick={handleNext} className="ml-auto bg-gradient-primary">
+                Próximo <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             ) : (
-              <Button
-                onClick={handleComplete}
-                disabled={loading}
-                className="ml-auto bg-gradient-primary"
-              >
-                {loading ? "Criando seu programa..." : "Começar Desafio"}
+              <Button onClick={handleComplete} disabled={loading} className="ml-auto bg-gradient-primary">
+                {loading ? "Montando seu plano..." : "Começar"}
               </Button>
             )}
           </div>
