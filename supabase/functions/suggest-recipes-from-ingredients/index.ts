@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { guardAi } from "../_shared/admin.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,10 +28,9 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader! } } }
     );
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      throw new Error("User not authenticated");
-    }
+    const guard = await guardAi(req, "suggest-recipes-from-ingredients", corsHeaders);
+    if (guard.deny) return guard.deny;
+    const user = guard.user;
 
     console.log('Generating recipes with AI for ingredients:', ingredients);
 
