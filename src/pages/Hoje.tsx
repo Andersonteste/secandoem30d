@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAccount } from "@/hooks/useAccount";
-import { BRAND, GOAL_LABELS, LOCATION_LABELS } from "@/lib/brand";
+import { BRAND, GOAL_LABELS, LEVEL_LABELS, LOCATION_LABELS } from "@/lib/brand";
 import {
   Dumbbell, UtensilsCrossed, Droplets, Moon, Sparkles, CheckCircle2,
   Loader2, Plus, ChevronRight, Flame,
@@ -170,8 +170,8 @@ const HojeContent = () => {
                 <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{workout.description}</p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {workout.duration_min && <Badge variant="secondary">{workout.duration_min} min</Badge>}
-                  {workout.level && <Badge variant="secondary">{workout.level}</Badge>}
-                  {workout.location && <Badge variant="secondary">{workout.location}</Badge>}
+                  {workout.level && <Badge variant="secondary">{LEVEL_LABELS[workout.level] ?? workout.level}</Badge>}
+                  {workout.location && <Badge variant="secondary">{LOCATION_LABELS[workout.location] ?? workout.location}</Badge>}
                 </div>
               </>
             ) : (

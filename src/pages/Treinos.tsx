@@ -46,9 +46,12 @@ const Treinos = () => {
 
   const getLevelLabel = (level: string) => {
     const levels: { [key: string]: string } = {
-      'iniciante': 'Iniciante',
-      'intermediario': 'Intermediário',
-      'avancado': 'Avançado'
+      beginner: 'Iniciante',
+      intermediate: 'Intermediário',
+      advanced: 'Avançado',
+      iniciante: 'Iniciante',
+      intermediario: 'Intermediário',
+      avancado: 'Avançado',
     };
     return levels[level] || level;
   };

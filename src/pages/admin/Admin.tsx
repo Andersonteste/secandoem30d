@@ -28,11 +28,7 @@ const MODULES = [
   { slug: "logs", label: "Logs" },
 ];
 
-const LEVELS = [
-  { value: "beginner", label: "Iniciante" },
-  { value: "intermediate", label: "Intermediário" },
-  { value: "advanced", label: "Avançado" },
-];
+const LEVELS = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }));
 
 const LOCATIONS = [
   { value: "casa", label: "Casa" },
