@@ -27,6 +27,14 @@ const HABITS_OF_DAY = [
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+/** Liga o objetivo do aluno ao objetivo cadastrado nos treinos. */
+const GOAL_TO_WORKOUT_GOAL: Record<string, string> = {
+  lose_weight: "emagrecimento",
+  gain_muscle: "hipertrofia",
+  maintain: "emagrecimento",
+  get_fit: "condicionamento",
+};
+
 const HojeContent = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -72,7 +80,8 @@ const HojeContent = () => {
 
       const workouts = (wRes.data ?? []).filter((w: any) => w.active !== false);
       const byLevel = level ? workouts.filter((w: any) => !w.level || w.level === level) : workouts;
-      const byGoal = goal ? byLevel.filter((w: any) => !w.goal || w.goal === goal) : byLevel;
+      const wantedGoal = goal ? GOAL_TO_WORKOUT_GOAL[goal] : null;
+      const byGoal = wantedGoal ? byLevel.filter((w: any) => !w.goal || w.goal === wantedGoal) : byLevel;
       const pool = byGoal.length ? byGoal : byLevel.length ? byLevel : workouts;
       setWorkout(pool[new Date().getDate() % Math.max(pool.length, 1)] ?? null);
 
