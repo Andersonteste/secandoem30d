@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAccount } from "@/hooks/useAccount";
-import { BRAND, GOAL_LABELS, LOCATION_LABELS } from "@/lib/brand";
+import { BRAND, GOAL_LABELS, LEVEL_LABELS, LOCATION_LABELS } from "@/lib/brand";
 import {
   Dumbbell, UtensilsCrossed, Droplets, Moon, Sparkles, CheckCircle2,
   Loader2, Plus, ChevronRight, Flame,
@@ -26,6 +26,14 @@ const HABITS_OF_DAY = [
 ];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
+
+/** Liga o objetivo do aluno ao objetivo cadastrado nos treinos. */
+const GOAL_TO_WORKOUT_GOAL: Record<string, string> = {
+  lose_weight: "emagrecimento",
+  gain_muscle: "hipertrofia",
+  maintain: "emagrecimento",
+  get_fit: "condicionamento",
+};
 
 const HojeContent = () => {
   const navigate = useNavigate();
@@ -72,7 +80,8 @@ const HojeContent = () => {
 
       const workouts = (wRes.data ?? []).filter((w: any) => w.active !== false);
       const byLevel = level ? workouts.filter((w: any) => !w.level || w.level === level) : workouts;
-      const byGoal = goal ? byLevel.filter((w: any) => !w.goal || w.goal === goal) : byLevel;
+      const wantedGoal = goal ? GOAL_TO_WORKOUT_GOAL[goal] : null;
+      const byGoal = wantedGoal ? byLevel.filter((w: any) => !w.goal || w.goal === wantedGoal) : byLevel;
       const pool = byGoal.length ? byGoal : byLevel.length ? byLevel : workouts;
       setWorkout(pool[new Date().getDate() % Math.max(pool.length, 1)] ?? null);
 
@@ -161,8 +170,8 @@ const HojeContent = () => {
                 <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{workout.description}</p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {workout.duration_min && <Badge variant="secondary">{workout.duration_min} min</Badge>}
-                  {workout.level && <Badge variant="secondary">{workout.level}</Badge>}
-                  {workout.location && <Badge variant="secondary">{workout.location}</Badge>}
+                  {workout.level && <Badge variant="secondary">{LEVEL_LABELS[workout.level] ?? workout.level}</Badge>}
+                  {workout.location && <Badge variant="secondary">{LOCATION_LABELS[workout.location] ?? workout.location}</Badge>}
                 </div>
               </>
             ) : (

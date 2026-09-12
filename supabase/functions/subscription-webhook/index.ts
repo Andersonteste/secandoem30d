@@ -52,9 +52,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Encontra o aluno pelo e-mail (pode ainda não ter conta).
-    const { data: users } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
-    const user = users?.users?.find((u) => (u.email ?? "").toLowerCase() === email) ?? null;
+    // Encontra o aluno pelo e-mail (pode ainda não ter conta), percorrendo todas as páginas.
+    let user: any = null;
+    for (let page = 1; page <= 50 && !user; page++) {
+      const { data: users } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+      const list = users?.users ?? [];
+      user = list.find((u: any) => (u.email ?? "").toLowerCase() === email) ?? null;
+      if (list.length < 200) break;
+    }
 
     const { data: plan } = productId
       ? await admin.from("plans").select("*").eq("external_product_id", productId).maybeSingle()

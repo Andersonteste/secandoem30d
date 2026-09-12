@@ -133,7 +133,14 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     let reply = agent?.away_message ?? "Recebi sua mensagem! Em breve alguém do time responde.";
 
-    if (agent && apiKey) {
+    // Respeita o limite diário de uso da orientação digital por aluno.
+    let withinLimit = true;
+    if (profile) {
+      const { data: allowed } = await admin.rpc("check_ai_limit", { _user_id: profile.id });
+      withinLimit = allowed !== false;
+    }
+
+    if (agent && apiKey && withinLimit) {
       // Contexto real do aluno antes de responder.
       let context = "Aluno ainda não identificado na plataforma.";
       if (profile) {
