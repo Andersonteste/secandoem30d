@@ -44,3 +44,31 @@ export const hasActiveAccess = async (userId: string) => {
 export const logFailure = async (source: string, error: string, payload: unknown) => {
   await adminClient().from("automation_failures").insert({ source, error, payload });
 };
+
+/**
+ * Exige aluno autenticado com acesso ativo e respeita o limite diário de IA.
+ * Devolve o usuário quando pode seguir, ou uma resposta pronta de erro.
+ */
+export const guardAi = async (
+  req: Request,
+  functionName: string,
+  headers: Record<string, string>,
+): Promise<{ user: { id: string }; deny?: undefined } | { user?: undefined; deny: Response }> => {
+  const json = (body: unknown, status: number) =>
+    new Response(JSON.stringify(body), { status, headers: { ...headers, "Content-Type": "application/json" } });
+
+  const user = await getUser(req);
+  if (!user) return { deny: json({ error: "Faça login para usar esta função." }, 401) };
+  if (!(await hasActiveAccess(user.id))) {
+    return { deny: json({ error: "Assinatura ativa necessária para usar esta função." }, 403) };
+  }
+
+  const admin = adminClient();
+  const { data: allowed } = await admin.rpc("check_ai_limit", { _user_id: user.id });
+  if (allowed === false) {
+    return { deny: json({ error: "Você atingiu o limite de uso de hoje. Tente novamente amanhã." }, 429) };
+  }
+
+  await admin.from("ai_usage").insert({ user_id: user.id, function_name: functionName });
+  return { user };
+};
