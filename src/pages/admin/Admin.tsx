@@ -6,7 +6,7 @@ import { AdminAlunos } from "@/components/admin/AdminAlunos";
 import { AdminConversas } from "@/components/admin/AdminConversas";
 import { AdminWhatsApp } from "@/components/admin/AdminWhatsApp";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { BRAND, DIET_TAGS, EQUIPMENT_OPTIONS, FOOD_GOALS, STORE_CATEGORIES, WORKOUT_GOALS } from "@/lib/brand";
+import { BRAND, DIET_TAGS, EQUIPMENT_OPTIONS, FOOD_GOALS, LEVEL_LABELS, STORE_CATEGORIES, WORKOUT_GOALS } from "@/lib/brand";
 import { ArrowLeft } from "lucide-react";
 
 const MODULES = [
@@ -28,7 +28,7 @@ const MODULES = [
   { slug: "logs", label: "Logs" },
 ];
 
-const LEVELS = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }));
+const LEVELS = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label: label as string }));
 
 const LOCATIONS = [
   { value: "casa", label: "Casa" },
