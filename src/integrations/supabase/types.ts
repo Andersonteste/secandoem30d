@@ -514,6 +514,120 @@ export type Database = {
           },
         ]
       }
+      exercise_substitutions: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          priority: number
+          reason: string | null
+          substitute_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          priority?: number
+          reason?: string | null
+          substitute_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          priority?: number
+          reason?: string | null
+          substitute_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_substitutions_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_substitutions_substitute_id_fkey"
+            columns: ["substitute_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          cautions: string | null
+          content_hash: string | null
+          created_at: string
+          difficulty: string | null
+          environments: string[]
+          equipment: string[]
+          id: string
+          instructions: string | null
+          is_active: boolean
+          laterality: string | null
+          movement_pattern: string | null
+          name: string
+          original_filename: string | null
+          primary_muscle: string | null
+          review_status: Database["public"]["Enums"]["exercise_review_status"]
+          secondary_muscles: string[]
+          slug: string
+          thumbnail_path: string | null
+          updated_at: string
+          video_path: string | null
+        }
+        Insert: {
+          cautions?: string | null
+          content_hash?: string | null
+          created_at?: string
+          difficulty?: string | null
+          environments?: string[]
+          equipment?: string[]
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          laterality?: string | null
+          movement_pattern?: string | null
+          name: string
+          original_filename?: string | null
+          primary_muscle?: string | null
+          review_status?: Database["public"]["Enums"]["exercise_review_status"]
+          secondary_muscles?: string[]
+          slug: string
+          thumbnail_path?: string | null
+          updated_at?: string
+          video_path?: string | null
+        }
+        Update: {
+          cautions?: string | null
+          content_hash?: string | null
+          created_at?: string
+          difficulty?: string | null
+          environments?: string[]
+          equipment?: string[]
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          laterality?: string | null
+          movement_pattern?: string | null
+          name?: string
+          original_filename?: string | null
+          primary_muscle?: string | null
+          review_status?: Database["public"]["Enums"]["exercise_review_status"]
+          secondary_muscles?: string[]
+          slug?: string
+          thumbnail_path?: string | null
+          updated_at?: string
+          video_path?: string | null
+        }
+        Relationships: []
+      }
       food_diary: {
         Row: {
           created_at: string | null
@@ -1131,6 +1245,72 @@ export type Database = {
         }
         Relationships: []
       }
+      session_exercises: {
+        Row: {
+          block: string | null
+          created_at: string
+          duration_sec: number | null
+          exercise_id: string
+          id: string
+          load_guidance: string | null
+          notes: string | null
+          order_num: number
+          reps: string | null
+          rest_sec: number | null
+          session_id: string
+          sets: number | null
+          tempo: string | null
+          updated_at: string
+        }
+        Insert: {
+          block?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          exercise_id: string
+          id?: string
+          load_guidance?: string | null
+          notes?: string | null
+          order_num?: number
+          reps?: string | null
+          rest_sec?: number | null
+          session_id: string
+          sets?: number | null
+          tempo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          block?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          exercise_id?: string
+          id?: string
+          load_guidance?: string | null
+          notes?: string | null
+          order_num?: number
+          reps?: string | null
+          rest_sec?: number | null
+          session_id?: string
+          sets?: number | null
+          tempo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_exercises_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_events: {
         Row: {
           created_at: string
@@ -1221,6 +1401,113 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_programs: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          days_per_week: number | null
+          description: string | null
+          environment: string | null
+          goal: string | null
+          id: string
+          is_active: boolean
+          level: string | null
+          name: string
+          order_num: number
+          review_status: Database["public"]["Enums"]["exercise_review_status"]
+          slug: string
+          updated_at: string
+          weeks: number
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          days_per_week?: number | null
+          description?: string | null
+          environment?: string | null
+          goal?: string | null
+          id?: string
+          is_active?: boolean
+          level?: string | null
+          name: string
+          order_num?: number
+          review_status?: Database["public"]["Enums"]["exercise_review_status"]
+          slug: string
+          updated_at?: string
+          weeks?: number
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          days_per_week?: number | null
+          description?: string | null
+          environment?: string | null
+          goal?: string | null
+          id?: string
+          is_active?: boolean
+          level?: string | null
+          name?: string
+          order_num?: number
+          review_status?: Database["public"]["Enums"]["exercise_review_status"]
+          slug?: string
+          updated_at?: string
+          weeks?: number
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          day_num: number
+          duration_min: number | null
+          focus: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          order_num: number
+          program_id: string
+          title: string
+          updated_at: string
+          week_num: number
+        }
+        Insert: {
+          created_at?: string
+          day_num?: number
+          duration_min?: number | null
+          focus?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          order_num?: number
+          program_id: string
+          title: string
+          updated_at?: string
+          week_num?: number
+        }
+        Update: {
+          created_at?: string
+          day_num?: number
+          duration_min?: number | null
+          focus?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          order_num?: number
+          program_id?: string
+          title?: string
+          updated_at?: string
+          week_num?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
             referencedColumns: ["id"]
           },
         ]
@@ -1421,6 +1708,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      exercise_review_status: "pending_review" | "published" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1549,6 +1837,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      exercise_review_status: ["pending_review", "published", "archived"],
     },
   },
 } as const
