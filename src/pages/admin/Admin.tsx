@@ -15,6 +15,7 @@ const MODULES = [
   { slug: "conversas", label: "Conversas" },
   { slug: "agentes", label: "Agentes" },
   { slug: "treinos", label: "Treinos" },
+  { slug: "exercicios", label: "Exercícios" },
   { slug: "alimentacao", label: "Receitas" },
   { slug: "biblioteca", label: "Biblioteca" },
   { slug: "jornadas", label: "Jornadas" },

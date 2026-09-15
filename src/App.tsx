@@ -24,6 +24,7 @@ import ReceitasIA from "./pages/ReceitasIA";
 import Loja from "./pages/Loja";
 import Admin from "./pages/admin/Admin";
 import AdminProdutos from "./pages/AdminProdutos";
+import AdminExercicios from "./pages/admin/AdminExercicios";
 import AdminReceitas from "./pages/AdminReceitas";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,7 @@ const App = () => (
             {/* Painel administrativo */}
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/:module" element={<Admin />} />
+            <Route path="/admin/exercicios" element={<AdminExercicios />} />
             <Route path="/admin/produtos" element={<AdminProdutos />} />
             <Route path="/admin/receitas" element={<AdminReceitas />} />
 
